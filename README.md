@@ -1,2 +1,7 @@
-# LostKingdom
- Unreal Portfolio Mocking Lost Ark
+# 로스트 킹덤(Lost Kingdom)
+ Unreal Portfolio Mocking Lost Ark  
+ ##
+ 스마일게이트 RPG의 로스트아크 게임을 할 수 있는 한 모작해본 1인 언리얼 포트폴리오입니다  
+ 1인이라 애셋의 한계가 있어 할 수 있을지는 모르겠지만 군단장 발탄을 따라해본 보스를 만들어 클리어하는게 목표입니다.  
+ 열심히 해보겠습니다!!
+ 
