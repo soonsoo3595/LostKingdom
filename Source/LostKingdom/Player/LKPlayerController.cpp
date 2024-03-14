@@ -56,13 +56,7 @@ void ALKPlayerController::OnSetDestinationTriggered()
 		Destination = Hit.Location;
 	}
 
-	APawn* ControlledPawn = GetPawn();
-	if (ControlledPawn != nullptr)
-	{
-		FVector WorldDirection = (Destination - ControlledPawn->GetActorLocation()).GetSafeNormal();
-		ControlledPawn->AddMovementInput(WorldDirection, 1.0, false);
-	}
-
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Destination);
 }
 
 void ALKPlayerController::OnSetDestinationReleased()
