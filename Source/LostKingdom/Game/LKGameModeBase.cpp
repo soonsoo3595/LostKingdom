@@ -4,10 +4,11 @@
 #include "Game/LKGameModeBase.h"
 #include "Player/LKPlayerController.h"
 
+// /Game/TopDown/Blueprints/BP_TopDownCharacter
 ALKGameModeBase::ALKGameModeBase()
 {
 	// Set Pawn
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/TopDown/Blueprints/BP_TopDownCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/CoreUObject.Class'/Script/LostKingdom.LKCharacterBase'"));
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;
