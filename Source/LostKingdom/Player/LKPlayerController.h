@@ -32,6 +32,10 @@ public:
 	/** Click Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SetDestinationClickAction;
+
+	/** Zoom Action **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ZoomAction;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -43,6 +47,13 @@ protected:
 	void OnSetDestinationTriggered();
 	void OnSetDestinationReleased();
 
+	/* Zoom */
+	void OnZoomTriggered(const FInputActionValue& Value);
+	void OnZoomIn();
+	void OnZoomOut();
+
 private:
 	FVector Destination;
+	/* Is Zoom in? */
+	uint8 bZooming : 1;
 };

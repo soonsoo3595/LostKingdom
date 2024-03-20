@@ -8,11 +8,14 @@
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Character/LKPlayerCharacter.h"
 
 ALKPlayerController::ALKPlayerController()
 {
 	bShowMouseCursor = true;
+
 	Destination = FVector::ZeroVector;
+	bZooming = false;
 }
 
 void ALKPlayerController::BeginPlay()
@@ -36,6 +39,7 @@ void ALKPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnSetDestinationTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &ALKPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ALKPlayerController::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnZoomTriggered);
 	}
 }
 
@@ -63,4 +67,42 @@ void ALKPlayerController::OnSetDestinationReleased()
 {
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Destination);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Destination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+}
+
+void ALKPlayerController::OnZoomTriggered(const FInputActionValue& Value)
+{
+	float AxisValue = Value.Get<float>();
+
+	if (AxisValue > 0.0f && !bZooming)
+	{
+		OnZoomIn();
+	}
+	else if (AxisValue < 0.0f && bZooming)
+	{
+		OnZoomOut();
+	}
+}
+
+void ALKPlayerController::OnZoomIn()
+{
+	bZooming = true;
+
+	const ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
+
+	if (PlayerCharacter)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Zoom In"));
+	}
+}
+
+void ALKPlayerController::OnZoomOut()
+{
+	bZooming = false;
+
+	const APawn* CurrentPawn = GetPawn();
+
+	if (CurrentPawn)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Zoom Out"));
+	}
 }
