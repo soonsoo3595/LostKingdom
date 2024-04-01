@@ -17,6 +17,12 @@ class LOSTKINGDOM_API ALKPlayerCharacter : public ALKCharacterBase
 public:
 	ALKPlayerCharacter();
 
+	virtual void Tick(float DeltaTime) override;
+
+public:
+	FORCEINLINE void ZoomIn() { bZoomIn = true; }
+	FORCEINLINE void ZoomOut() { bZoomIn = false; }
+
 protected:
 	/** Spring Arm */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -25,4 +31,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+private:
+	uint8 bZoomIn : 1;
+
+	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
+	float ZoomInArmLength;
+	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
+	float ZoomOutArmLength;
+
+	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
+	FRotator ZoomInRotation;
+	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
+	FRotator ZoomOutRotation;
 };

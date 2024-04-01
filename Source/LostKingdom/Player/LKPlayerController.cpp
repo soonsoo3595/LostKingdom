@@ -83,15 +83,17 @@ void ALKPlayerController::OnZoomTriggered(const FInputActionValue& Value)
 	}
 }
 
+
 void ALKPlayerController::OnZoomIn()
 {
 	bZooming = true;
 
-	const ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
+	ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
 
 	if (PlayerCharacter)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Zoom In"));
+		PlayerCharacter->ZoomIn();
 	}
 }
 
@@ -99,10 +101,11 @@ void ALKPlayerController::OnZoomOut()
 {
 	bZooming = false;
 
-	const APawn* CurrentPawn = GetPawn();
+	ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
 
-	if (CurrentPawn)
+	if (PlayerCharacter)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Zoom Out"));
+		PlayerCharacter->ZoomOut();
 	}
 }
