@@ -25,6 +25,11 @@ ALKCharacterBase::ALKCharacterBase()
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
+	static ConstructorHelpers::FClassFinder<UAnimInstance> CharacterAnimRef(TEXT("/Game/LostKingdom/Animation/ABP_LKCharacter.ABP_LKCharacter_C"));
+	if (CharacterAnimRef.Class)
+	{
+		GetMesh()->SetAnimInstanceClass(CharacterAnimRef.Class);
+	}
 }
 
 // Called when the game starts or when spawned
