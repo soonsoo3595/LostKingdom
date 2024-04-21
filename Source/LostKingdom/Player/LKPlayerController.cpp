@@ -45,7 +45,7 @@ void ALKPlayerController::SetupInputComponent()
 
 void ALKPlayerController::OnInputStarted()
 {
-	StopMovement();
+
 }
 
 void ALKPlayerController::OnSetDestinationTriggered()
