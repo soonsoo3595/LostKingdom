@@ -36,6 +36,10 @@ public:
 	/** Zoom Action **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomAction;
+
+	/** Roll Action **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))	
+	class UInputAction* RollAction;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -52,8 +56,20 @@ protected:
 	void OnZoomIn();
 	void OnZoomOut();
 
+	void OnRollTriggered(const FInputActionValue& Value);
+	void OnRollCooldownCompleted();
+
+protected:
+	FTimerHandle CooldownTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	float RollCooldownTime;
+
 private:
 	FVector Destination;
 	/* Is Zoom in? */
 	uint8 bZooming : 1;
+
+	/* Can Roll? */
+	uint8 bCanRoll : 1;
 };

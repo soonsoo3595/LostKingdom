@@ -16,6 +16,7 @@ ALKPlayerController::ALKPlayerController()
 
 	Destination = FVector::ZeroVector;
 	bZooming = false;
+	bCanRoll = true;
 }
 
 void ALKPlayerController::BeginPlay()
@@ -40,6 +41,7 @@ void ALKPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &ALKPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ALKPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnZoomTriggered);
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ALKPlayerController::OnRollTriggered);
 	}
 }
 
@@ -108,4 +110,29 @@ void ALKPlayerController::OnZoomOut()
 		UE_LOG(LogTemp, Log, TEXT("Zoom Out"));
 		PlayerCharacter->ZoomOut();
 	}
+}
+
+void ALKPlayerController::OnRollTriggered(const FInputActionValue& Value)
+{
+	if(!bCanRoll)
+	{
+		return;
+	}
+
+	bCanRoll = false;
+
+	ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
+	if(PlayerCharacter)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Roll"));
+		PlayerCharacter->Roll();
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, this, &ALKPlayerController::OnRollCooldownCompleted, RollCooldownTime, false);
+}
+
+void ALKPlayerController::OnRollCooldownCompleted()
+{
+	UE_LOG(LogTemp, Log, TEXT("Roll Cooldown Completed"));
+	bCanRoll = true;
 }
