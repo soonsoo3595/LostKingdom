@@ -40,6 +40,10 @@ public:
 	/** Roll Action **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))	
 	class UInputAction* RollAction;
+
+	/** Attack Action**/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AttackAction;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -59,10 +63,13 @@ protected:
 	void OnRollTriggered(const FInputActionValue& Value);
 	void OnRollCooldownCompleted();
 
+	/* Attack */
+	void OnAttackTriggered();
+
 protected:
 	FTimerHandle CooldownTimerHandle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Roll)
 	float RollCooldownTime;
 
 private:
@@ -72,4 +79,5 @@ private:
 
 	/* Can Roll? */
 	uint8 bCanRoll : 1;
+
 };

@@ -17,6 +17,7 @@ class LOSTKINGDOM_API ALKPlayerCharacter : public ALKCharacterBase
 public:
 	ALKPlayerCharacter();
 
+	virtual void PostInitializeComponents() override;
 	virtual void Tick(float DeltaTime) override;
 
 public:
@@ -24,6 +25,9 @@ public:
 	FORCEINLINE void ZoomOut() { bZoomIn = false; }
 
 	void Roll();
+
+	void ProcessCombo();
+	void NotifyCombo();
 
 protected:
 	/** Spring Arm */
@@ -37,6 +41,25 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimMontage> RollMontage;
 
+// Attack Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<class UAnimMontage> ComboAttackMontage;
+	
+	void ComboAttackBegin();
+	void ComboAttackEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+
+	// 노티파이 이벤트가 호출되면 입력이 들어왔는지 확인 후 다음 콤보 액션을 실행
+	void ComboCheck();
+
+	void LookAt();
+
+	int32 MaxCombo = 4;
+	int32 CurrentCombo = 0;
+
+	// 노티파이 이전에 입력이 들어왔는지
+	bool HasNextComboInput = false;
+
 private:
 	uint8 bZoomIn : 1;
 
@@ -49,4 +72,12 @@ private:
 	FRotator ZoomInRotation;
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
 	FRotator ZoomOutRotation;
+
+	UPROPERTY()
+	class UAnimInstance* AnimInstance;
+
+	/* Input Debounce */
+	FTimerHandle DebounceTimerHandle;
+	uint8 bIsDebouncing : 1;
+	FORCEINLINE void ResetDebounce() { bIsDebouncing = false; }
 };

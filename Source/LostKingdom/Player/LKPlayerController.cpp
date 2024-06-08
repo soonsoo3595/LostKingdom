@@ -42,6 +42,7 @@ void ALKPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ALKPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnZoomTriggered);
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ALKPlayerController::OnRollTriggered);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnAttackTriggered);
 	}
 }
 
@@ -60,14 +61,12 @@ void ALKPlayerController::OnSetDestinationTriggered()
 	if (bHitSuccessful)
 	{
 		Destination = Hit.Location;
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Destination);
 	}
-
-	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Destination);
 }
 
 void ALKPlayerController::OnSetDestinationReleased()
 {
-	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Destination);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Destination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 }
 
@@ -135,4 +134,12 @@ void ALKPlayerController::OnRollCooldownCompleted()
 {
 	UE_LOG(LogTemp, Log, TEXT("Roll Cooldown Completed"));
 	bCanRoll = true;
+}
+
+void ALKPlayerController::OnAttackTriggered()
+{
+	StopMovement();
+
+	ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
+	PlayerCharacter->ProcessCombo();
 }
