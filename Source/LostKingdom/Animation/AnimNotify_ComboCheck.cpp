@@ -3,6 +3,7 @@
 
 #include "Animation/AnimNotify_ComboCheck.h"
 #include "Character/LKPlayerCharacter.h"
+#include "Interface/LKAttackInterface.h"
 
 void UAnimNotify_ComboCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -10,10 +11,10 @@ void UAnimNotify_ComboCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 
 	if (MeshComp)
 	{
-		ALKPlayerCharacter* PlayerCharacter = Cast<ALKPlayerCharacter>(MeshComp->GetOwner());
-		if (PlayerCharacter)
+		ILKAttackInterface* AttackPawn = Cast<ILKAttackInterface>(MeshComp->GetOwner());
+		if (AttackPawn)
 		{
-			PlayerCharacter->NotifyCombo();
+			AttackPawn->ComboAttackCheck();
 		}
 	}
 }

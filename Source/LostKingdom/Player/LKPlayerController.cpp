@@ -140,6 +140,9 @@ void ALKPlayerController::OnAttackTriggered()
 {
 	StopMovement();
 
-	ALKPlayerCharacter* PlayerCharacter = CastChecked<ALKPlayerCharacter>(GetPawn());
-	PlayerCharacter->ProcessCombo();
+	ILKAttackInterface* PlayerCharacter = CastChecked<ILKAttackInterface>(GetPawn());
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->ProcessCombo();
+	}
 }
