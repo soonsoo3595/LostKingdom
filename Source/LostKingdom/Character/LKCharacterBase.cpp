@@ -4,6 +4,7 @@
 #include "Character/LKCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 ALKCharacterBase::ALKCharacterBase()
@@ -30,6 +31,8 @@ ALKCharacterBase::ALKCharacterBase()
 	{
 		GetMesh()->SetAnimInstanceClass(CharacterAnimRef.Class);
 	}
+
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	WeaponComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
 	WeaponComponent->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
@@ -88,6 +91,16 @@ void ALKCharacterBase::ComboAttackCheck()
 void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s %d"), *OtherActor->GetName(), CurrentCombo);
+
+	if (OtherActor)
+	{
+		ALKCharacterBase* Enemy = Cast<ALKCharacterBase>(OtherActor);
+		if (Enemy)
+		{
+			FDamageEvent DamageEvent;
+			Enemy->TakeDamage(10.0f, DamageEvent, GetController(), this);
+		}
+	}
 }
 
 void ALKCharacterBase::ComboAttackBegin()
@@ -153,4 +166,26 @@ void ALKCharacterBase::LookAt()
 
 		SetActorRotation(CurrentRotation);
 	}
+}
+
+float ALKCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	SetDead();
+
+	return DamageAmount;
+}
+
+void ALKCharacterBase::SetDead()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	PlayDeadAnimation();
+	SetActorEnableCollision(false);
+}
+
+void ALKCharacterBase::PlayDeadAnimation()
+{
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(DeadMontage);
 }

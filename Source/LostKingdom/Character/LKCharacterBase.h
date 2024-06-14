@@ -52,6 +52,16 @@ protected:
 	// 노티파이 이전에 입력이 들어왔는지
 	bool HasNextComboInput = false;
 
+// Dead Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimMontage> DeadMontage;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void SetDead();
+
+	void PlayDeadAnimation();
+
 private:
 	/* Input Debounce */
 	FTimerHandle DebounceTimerHandle;
