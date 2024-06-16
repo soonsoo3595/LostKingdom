@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/LKAttackInterface.h"
+#include "Interface/LKCharacterWidgetInterface.h"
 #include "LKCharacterBase.generated.h"
 
 UCLASS()
-class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInterface
+class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInterface, public ILKCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -52,6 +53,12 @@ protected:
 	// 노티파이 이전에 입력이 들어왔는지
 	bool HasNextComboInput = false;
 
+private:
+	/* Input Debounce */
+	FTimerHandle DebounceTimerHandle;
+	uint8 bIsDebouncing : 1;
+	FORCEINLINE void ResetDebounce() { bIsDebouncing = false; }
+
 // Dead Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
@@ -62,9 +69,15 @@ protected:
 
 	void PlayDeadAnimation();
 
-private:
-	/* Input Debounce */
-	FTimerHandle DebounceTimerHandle;
-	uint8 bIsDebouncing : 1;
-	FORCEINLINE void ResetDebounce() { bIsDebouncing = false; }
+// Stat Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class ULKCharacterStatComponent> Stat;
+
+// UI Widget Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class ULKWidgetComponent> HUD;
+ 
+	virtual void SetupCharacterWidget(class ULKUserWidget* InUserWidget) override;
 };
