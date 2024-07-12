@@ -107,13 +107,15 @@ void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s %d"), *OtherActor->GetName(), CurrentCombo);
 
+	const float AttackDamage = Stat->GetFinalStat().ATK;
+
 	if (OtherActor)
 	{
 		ALKCharacterBase* Enemy = Cast<ALKCharacterBase>(OtherActor);
 		if (Enemy)
 		{
 			FDamageEvent DamageEvent;
-			Enemy->TakeDamage(50.0f, DamageEvent, GetController(), this);
+			Enemy->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 		}
 	}
 }
@@ -211,7 +213,7 @@ void ALKCharacterBase::SetupCharacterWidget(ULKUserWidget* InUserWidget)
 	ULKHUDWidget *HUDWidget = Cast<ULKHUDWidget>(InUserWidget);
 	if (HUDWidget)
 	{
-		HUDWidget->SetMaxHP(Stat->GetMaxHp());
+		HUDWidget->SetMaxHP(Stat->GetFinalStat().MaxHP);
 		HUDWidget->UpdateHPBar(Stat->GetCurrentHp());
 		HUDWidget->SetCharacterName(Stat->GetCharacterName());
 

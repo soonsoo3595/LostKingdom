@@ -2,11 +2,11 @@
 
 
 #include "CharacterStat/LKCharacterStatComponent.h"
+#include "GameData/LKGameSingleton.h"
 
 ULKCharacterStatComponent::ULKCharacterStatComponent()
 {
-	MaxHP = 200.0f;
-	CurrentHP = MaxHP;
+	CurrentLevel = 1;
 
 	bWantsInitializeComponent = true;
 }
@@ -15,7 +15,15 @@ void ULKCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	SetHP(MaxHP);
+	SetLevelStat(CurrentLevel);
+	SetHP(BaseStat.MaxHP);
+}
+
+void ULKCharacterStatComponent::SetLevelStat(int32 InNewLevel)
+{
+	CurrentLevel = FMath::Clamp(InNewLevel, 1, ULKGameSingleton::Get().CharacterMaxLevel);
+	SetBaseStat(ULKGameSingleton::Get().GetEnemyStat(CurrentLevel));
+	check(BaseStat.MaxHP > 0);
 }
 
 float ULKCharacterStatComponent::ApplyDamage(float InDamage)
@@ -34,7 +42,7 @@ float ULKCharacterStatComponent::ApplyDamage(float InDamage)
 
 void ULKCharacterStatComponent::SetHP(float NewHP)
 {
-	CurrentHP = FMath::Clamp<float>(NewHP, 0, MaxHP);
+	CurrentHP = FMath::Clamp<float>(NewHP, 0, BaseStat.MaxHP);
 	OnHPChanged.Broadcast(CurrentHP);
 }
 
