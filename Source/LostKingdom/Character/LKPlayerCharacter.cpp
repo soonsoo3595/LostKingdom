@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CharacterStat/LKPlayerCharacterStatComponent.h"
+#include "GameData/LKBattleStat.h"
 
 ALKPlayerCharacter::ALKPlayerCharacter()
 {
@@ -41,14 +43,33 @@ void ALKPlayerCharacter::Tick(float DeltaTime)
 	}
 }
 
+void ALKPlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	ULKPlayerCharacterStatComponent* PlayerStat = CastChecked<ULKPlayerCharacterStatComponent>(Stat);
+	PlayerStat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
+	
+}
+
 void ALKPlayerCharacter::Roll()
 {
 	AnimInstance->Montage_Play(RollMontage);
 }
 
+
 void ALKPlayerCharacter::AttackStart()
 {
 	Super::AttackStart();
 	WeaponComponent->SetCollisionProfileName(TEXT("LKPlayerAttack"));
+}
+
+void ALKPlayerCharacter::OnBattleStatChanged(const FLKBattleStat& InBattleStat)
+{
+	UE_LOG(LogTemp, Log, TEXT("OnBattleStatChanged"));
+
+	// Speed Setting
+	float WalkSpeed = GetCharacterMovement()->MaxWalkSpeed * Stat->GetSpeed();
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 

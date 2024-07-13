@@ -9,13 +9,14 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnHPZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHPChangedDelegate, float /*CurrentHp*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChangedDelegate, const FLKCharacterStat&, const FLKCharacterStat&);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class LOSTKINGDOM_API ULKCharacterStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	ULKCharacterStatComponent();
 
 protected:
@@ -24,12 +25,13 @@ protected:
 public:
 	FOnHPZeroDelegate OnHPZero;
 	FOnHPChangedDelegate OnHPChanged;
+	FOnStatChangedDelegate OnStatChanged;
 
 	virtual void SetLevelStat(int32 InNewLevel);
 	FORCEINLINE int32 GetCurrentLevel() const { return CurrentLevel; }
-	FORCEINLINE void AddBaseStat(const FLKCharacterStat& InAddBaseStat) { BaseStat = BaseStat + InAddBaseStat; }
-	FORCEINLINE void SetBaseStat(const FLKCharacterStat& InBaseStat) { BaseStat = InBaseStat; }
-	FORCEINLINE void SetModifierStat(const FLKCharacterStat& InModifierStat) { ModifierStat = InModifierStat; }
+	FORCEINLINE void AddBaseStat(const FLKCharacterStat& InAddBaseStat) { BaseStat = BaseStat + InAddBaseStat; OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat()); }
+	FORCEINLINE void SetBaseStat(const FLKCharacterStat& InBaseStat) { BaseStat = InBaseStat; OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat()); }
+	FORCEINLINE void SetModifierStat(const FLKCharacterStat& InModifierStat) { ModifierStat = InModifierStat; OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat()); }
 
 	FORCEINLINE const FLKCharacterStat& GetBaseStat() { return BaseStat; }
 	FORCEINLINE const FLKCharacterStat& GetModifierStat() { return ModifierStat; }
@@ -37,6 +39,10 @@ public:
 	FORCEINLINE float GetCurrentHp() { return CurrentHP; }
 	FORCEINLINE FText GetCharacterName() { return CharacterName; }
 	float ApplyDamage(float InDamage);
+
+	float GetAttack();
+	FORCEINLINE virtual float GetSpeed() { return 1.0f; }
+	FORCEINLINE virtual bool CheckCriticalHit() { return false; }
 
 protected:
 	void SetHP(float NewHP);

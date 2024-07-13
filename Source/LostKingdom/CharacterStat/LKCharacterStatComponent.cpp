@@ -40,6 +40,15 @@ float ULKCharacterStatComponent::ApplyDamage(float InDamage)
 	return ActualDamage;
 }
 
+float ULKCharacterStatComponent::GetAttack()
+{
+	float AttackPower = GetFinalStat().ATK;
+
+	CheckCriticalHit() ? AttackPower *= 2.0f : AttackPower;
+
+	return AttackPower;
+}
+
 void ULKCharacterStatComponent::SetHP(float NewHP)
 {
 	CurrentHP = FMath::Clamp<float>(NewHP, 0, BaseStat.MaxHP);

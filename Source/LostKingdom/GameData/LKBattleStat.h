@@ -12,14 +12,13 @@ public:
 	FLKBattleStat() : Crit(0.0f), Special(0.0f), Speed(0.0f){}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Crit;			// 치명 
+	float Crit;			// Critical
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Special;		// 특화
+	float Special;		// Specialization
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Speed;		// 신속
-
+	float Speed;		// Speed
 
 	FLKBattleStat operator+(const FLKBattleStat& Other) const
 	{

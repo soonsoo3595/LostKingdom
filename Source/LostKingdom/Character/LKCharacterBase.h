@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Interface/LKAttackInterface.h"
 #include "Interface/LKCharacterWidgetInterface.h"
+#include "Components/CapsuleComponent.h"
 #include "LKCharacterBase.generated.h"
 
 UCLASS()
@@ -32,9 +33,10 @@ protected:
 	TObjectPtr<class UAnimMontage> AttackMontage;
 
 	virtual void ProcessCombo() override;
-	virtual void AttackStart() override;
-	virtual void AttackEnd() override;
-	virtual void ComboAttackCheck() override;
+	FORCEINLINE virtual void AttackComplete() override { HasNextComboInput = false; }
+	FORCEINLINE virtual void AttackStart() override { }
+	FORCEINLINE virtual void AttackEnd() override { WeaponComponent->SetCollisionProfileName(TEXT("NoCollision")); }
+	FORCEINLINE virtual void ComboAttackCheck() override { ComboCheck(); }
 
 	UFUNCTION()
 	virtual void OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -52,12 +54,6 @@ protected:
 
 	// 노티파이 이전에 입력이 들어왔는지
 	bool HasNextComboInput = false;
-
-private:
-	/* Input Debounce */
-	FTimerHandle DebounceTimerHandle;
-	uint8 bIsDebouncing : 1;
-	FORCEINLINE void ResetDebounce() { bIsDebouncing = false; }
 
 // Dead Section
 protected:

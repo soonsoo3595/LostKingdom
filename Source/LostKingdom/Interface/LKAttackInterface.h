@@ -22,6 +22,7 @@ class LOSTKINGDOM_API ILKAttackInterface
 
 public:
 	virtual void ProcessCombo() = 0;
+	virtual void AttackComplete() = 0;
 	virtual void AttackStart() = 0;
 	virtual void AttackEnd() = 0;
 	virtual void ComboAttackCheck() = 0;

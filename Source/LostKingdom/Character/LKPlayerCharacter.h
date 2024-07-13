@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/LKCharacterBase.h"
+#include "GameData/LKBattleStat.h"
 #include "LKPlayerCharacter.generated.h"
 
 /**
@@ -19,14 +20,17 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+	virtual void PostInitializeComponents() override;
+	virtual void AttackStart() override;
+
+	void OnBattleStatChanged(const FLKBattleStat& InBattleStat);
+
 public:
 	FORCEINLINE void ZoomIn() { bZoomIn = true; }
 	FORCEINLINE void ZoomOut() { bZoomIn = false; }
 
 	void Roll();
-
-protected:
-	virtual void AttackStart() override;
 
 protected:
 	/** Spring Arm */

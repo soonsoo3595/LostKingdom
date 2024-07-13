@@ -42,7 +42,9 @@ void ALKPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ALKPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnZoomTriggered);
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ALKPlayerController::OnRollTriggered);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALKPlayerController::OnAttackTriggered);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnAttackTriggered);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALKPlayerController::OnAttackCompleted);
 	}
 }
 
@@ -83,7 +85,6 @@ void ALKPlayerController::OnZoomTriggered(const FInputActionValue& Value)
 		OnZoomOut();
 	}
 }
-
 
 void ALKPlayerController::OnZoomIn()
 {
@@ -144,5 +145,14 @@ void ALKPlayerController::OnAttackTriggered()
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->ProcessCombo();
+	}
+}
+
+void ALKPlayerController::OnAttackCompleted()
+{
+	ILKAttackInterface* PlayerCharacter = CastChecked<ILKAttackInterface>(GetPawn());
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->AttackComplete();
 	}
 }

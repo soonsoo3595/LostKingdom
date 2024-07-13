@@ -44,7 +44,7 @@ public:
 	/** Attack Action**/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* AttackAction;
-	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -65,6 +65,7 @@ protected:
 
 	/* Attack */
 	void OnAttackTriggered();
+	void OnAttackCompleted();
 
 protected:
 	FTimerHandle CooldownTimerHandle;

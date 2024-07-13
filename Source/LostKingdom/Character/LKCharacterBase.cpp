@@ -2,7 +2,6 @@
 
 
 #include "Character/LKCharacterBase.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/LKCharacterStatComponent.h"
@@ -34,8 +33,6 @@ ALKCharacterBase::ALKCharacterBase()
 	WeaponComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
 	WeaponComponent->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
 	WeaponComponent->SetCollisionProfileName(TEXT("NoCollision"));
-
-	bIsDebouncing = false;
 
 	// Stat
 	Stat = CreateDefaultSubobject<ULKCharacterStatComponent>(TEXT("Stat"));
@@ -69,14 +66,6 @@ void ALKCharacterBase::PostInitializeComponents()
 /// </summary>
 void ALKCharacterBase::ProcessCombo()
 {
-	// 디바운스 처리를 해서 마우스를 짧게 눌러도 한번만 입력되도록 함
-	if (bIsDebouncing)	return;
-
-	bIsDebouncing = true;
-
-	GetWorldTimerManager().SetTimer(DebounceTimerHandle, this, &ALKCharacterBase::ResetDebounce, 0.2f, false);
-
-
 	if (CurrentCombo == 0)
 	{
 		ComboAttackBegin();
@@ -86,28 +75,11 @@ void ALKCharacterBase::ProcessCombo()
 	HasNextComboInput = true;
 }
 
-void ALKCharacterBase::AttackStart()
-{
-}
-
-void ALKCharacterBase::AttackEnd()
-{
-	WeaponComponent->SetCollisionProfileName(TEXT("NoCollision"));
-}
-
-/// <summary>
-/// 몽타주에서 노티파이 이벤트가 발생하면 ComboCheck를 호출 
-/// </summary>
-void ALKCharacterBase::ComboAttackCheck()
-{
-	ComboCheck();
-}
-
 void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OtherActor : %s %d"), *OtherActor->GetName(), CurrentCombo);
-
-	const float AttackDamage = Stat->GetFinalStat().ATK;
+	// The more you attack in a row, the more damage you get
+	const float AttackDamage = Stat->GetAttack() * CurrentCombo;
+	UE_LOG(LogTemp, Warning, TEXT("Attack Damage: %f"), AttackDamage);
 
 	if (OtherActor)
 	{
@@ -126,7 +98,7 @@ void ALKCharacterBase::ComboAttackBegin()
 	CurrentCombo = 1;
 
 	// 애니메이션 세팅
-	const float AttackSpeed = 1.0f;		// 속도 특성 있을 경우 변경
+	const float AttackSpeed = Stat->GetSpeed();
 	AnimInstance->Montage_Play(AttackMontage, AttackSpeed);
 
 	// 몽타주가 종료되면 ComboAttackEnd 함수 호출
