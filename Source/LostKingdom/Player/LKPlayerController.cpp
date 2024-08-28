@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/LKPlayerCharacter.h"
+#include "UI/LKMainHUD.h"
 
 ALKPlayerController::ALKPlayerController()
 {
@@ -17,6 +18,12 @@ ALKPlayerController::ALKPlayerController()
 	Destination = FVector::ZeroVector;
 	bZooming = false;
 	bCanRoll = true;
+
+	static ConstructorHelpers::FClassFinder<ULKMainHUD> LKMainHUDRef(TEXT("/Game/LostKingdom/UI/WBP_MainHUD.WBP_MainHUD_C"));
+	if (LKMainHUDRef.Class)
+	{
+		MainHUDClass = LKMainHUDRef.Class;
+	}
 }
 
 void ALKPlayerController::BeginPlay()
@@ -26,6 +33,12 @@ void ALKPlayerController::BeginPlay()
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
+	
+	MainHUD = CreateWidget<ULKMainHUD>(this, MainHUDClass);
+	if (MainHUD)
+	{
+		MainHUD->AddToViewport();
 	}
 }
 

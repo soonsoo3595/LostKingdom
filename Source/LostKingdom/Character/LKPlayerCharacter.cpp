@@ -47,9 +47,11 @@ void ALKPlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	ULKPlayerCharacterStatComponent* PlayerStat = CastChecked<ULKPlayerCharacterStatComponent>(Stat);
-	PlayerStat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
-	
+	ULKPlayerCharacterStatComponent* PlayerStat = Cast<ULKPlayerCharacterStatComponent>(Stat);
+	if (PlayerStat)
+	{
+		PlayerStat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
+	}
 }
 
 void ALKPlayerCharacter::Roll()

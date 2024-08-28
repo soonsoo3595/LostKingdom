@@ -67,6 +67,15 @@ protected:
 	void OnAttackTriggered();
 	void OnAttackCompleted();
 
+// HUD
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HUD)
+	TSubclassOf<class ULKMainHUD> MainHUDClass;
+
+	UPROPERTY()
+	TObjectPtr<class ULKMainHUD> MainHUD;
+
+
 protected:
 	FTimerHandle CooldownTimerHandle;
 

@@ -15,7 +15,7 @@ ULKPlayerCharacterStatComponent::ULKPlayerCharacterStatComponent()
 
 void ULKPlayerCharacterStatComponent::BeginPlay()
 {
-	SetBattleStat(TestBattleStat);
+	// SetBattleStat(TestBattleStat);
 }
 
 void ULKPlayerCharacterStatComponent::SetLevelStat(int32 InNewLevel)
