@@ -7,6 +7,7 @@
 ULKCharacterStatComponent::ULKCharacterStatComponent()
 {
 	CurrentLevel = 1;
+	CurrentExp = 0;
 
 	bWantsInitializeComponent = true;
 }
@@ -24,6 +25,21 @@ void ULKCharacterStatComponent::SetLevelStat(int32 InNewLevel)
 	CurrentLevel = FMath::Clamp(InNewLevel, 1, ULKGameSingleton::Get().CharacterMaxLevel);
 	SetBaseStat(ULKGameSingleton::Get().GetEnemyStat(CurrentLevel));
 	check(BaseStat.MaxHP > 0);
+}
+
+void ULKCharacterStatComponent::AddExp(int32 InExp)
+{
+	CurrentExp += InExp;
+
+	if (CurrentExp >= BaseStat.Exp)
+	{
+		CurrentExp = FMath::Clamp(CurrentExp - BaseStat.Exp, 0, BaseStat.Exp);
+		SetLevelStat(CurrentLevel + 1);
+		SetHP(BaseStat.MaxHP);
+		OnLevelUp.Broadcast(CurrentLevel);
+	}
+
+	OnExpChanged.Broadcast(CurrentExp, BaseStat.Exp);
 }
 
 float ULKCharacterStatComponent::ApplyDamage(float InDamage)

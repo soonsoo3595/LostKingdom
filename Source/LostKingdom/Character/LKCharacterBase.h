@@ -64,6 +64,7 @@ protected:
 	virtual void SetDead();
 
 	void PlayDeadAnimation();
+	uint8 bIsDead : 1;
 
 // Stat Section
 protected:

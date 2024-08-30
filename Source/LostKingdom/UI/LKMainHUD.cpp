@@ -1,7 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "UI/LKMainHUD.h"
-#include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Character/LKPlayerCharacter.h"
+#include "UI/LKExpWidget.h"
+
+void ULKMainHUD::NativeOnInitialized()
+{
+    Super::NativeOnInitialized();
+
+    ALKPlayerCharacter* PlayerCharacter = Cast<ALKPlayerCharacter>(GetOwningPlayerPawn());
+    if (PlayerCharacter)
+    {
+        ExpWidget->SetOwner(PlayerCharacter);
+    }
+}
 
 void ULKMainHUD::NativeConstruct()
 {

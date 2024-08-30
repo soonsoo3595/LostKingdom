@@ -36,6 +36,7 @@ ALKCharacterBase::ALKCharacterBase()
 
 	// Stat
 	Stat = CreateDefaultSubobject<ULKCharacterStatComponent>(TEXT("Stat"));
+	bIsDead = false;
 
 	// Widget
 	HUD = CreateDefaultSubobject<ULKWidgetComponent>(TEXT("HUD"));
@@ -88,6 +89,12 @@ void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor
 		{
 			FDamageEvent DamageEvent;
 			Enemy->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+
+			// 적이 죽었을 때 경험치 획득
+			if (Enemy->bIsDead)
+			{
+				Stat->AddExp(Enemy->Stat->GetBaseStat().Exp);
+			}
 		}
 	}
 }
@@ -172,6 +179,8 @@ void ALKCharacterBase::SetDead()
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
 	HUD->SetHiddenInGame(true);
+
+	bIsDead = true;
 }
 
 void ALKCharacterBase::PlayDeadAnimation()

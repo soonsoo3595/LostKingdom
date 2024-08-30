@@ -15,12 +15,6 @@ void ULKHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	HPProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("PBHPBar")));
-	ensure(HPProgressBar);
-
-	CharacterName = Cast<UTextBlock>(GetWidgetFromName(TEXT("TXTName")));
-	ensure(CharacterName);
-
 	ILKCharacterWidgetInterface* CharacterWidget = Cast<ILKCharacterWidgetInterface>(Owner);
 	if (CharacterWidget)
 	{
@@ -31,16 +25,16 @@ void ULKHUDWidget::NativeConstruct()
 void ULKHUDWidget::UpdateHPBar(float InCurrentHP)
 {
 	ensure(MaxHP > 0.0f);
-	if (HPProgressBar)
+	if (PBHPBar)
 	{
-		HPProgressBar->SetPercent(InCurrentHP / MaxHP);
+		PBHPBar->SetPercent(InCurrentHP / MaxHP);
 	}
 }
 
 void ULKHUDWidget::SetCharacterName(const FText& InCharacterName)
 {
-	if (CharacterName)
+	if (TXTName)
 	{
-		CharacterName->SetText(InCharacterName);
+		TXTName->SetText(InCharacterName);
 	}
 }

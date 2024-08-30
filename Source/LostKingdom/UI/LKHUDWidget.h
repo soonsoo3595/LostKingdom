@@ -26,11 +26,11 @@ public:
 	void SetCharacterName(const FText& InCharacterName);
 
 protected:
-	UPROPERTY()
-	TObjectPtr<class UProgressBar> HPProgressBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UProgressBar> PBHPBar;
 
-	UPROPERTY()
-	TObjectPtr<class UTextBlock> CharacterName;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> TXTName;
 
 	UPROPERTY()
 	float MaxHP;

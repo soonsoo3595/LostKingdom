@@ -3,26 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/LKUserWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "LKMainHUD.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ULKMainHUD : public ULKUserWidget
+class LOSTKINGDOM_API ULKMainHUD : public UUserWidget
 {
 	GENERATED_BODY()
 	
 protected:
+	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UProgressBar> ExpGuage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UTextBlock> ExpLevel;
+	TObjectPtr<class ULKExpWidget> ExpWidget;
 
 protected:
 	UPROPERTY(meta = (BindWidget))

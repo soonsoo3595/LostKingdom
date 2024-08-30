@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "CharacterStat/LKPlayerCharacterStatComponent.h"
 #include "GameData/LKBattleStat.h"
+#include "UI/LKExpWidget.h"
 
 ALKPlayerCharacter::ALKPlayerCharacter()
 {
@@ -75,3 +76,17 @@ void ALKPlayerCharacter::OnBattleStatChanged(const FLKBattleStat& InBattleStat)
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
+void ALKPlayerCharacter::SetupCharacterWidget(ULKUserWidget* InUserWidget)
+{
+	Super::SetupCharacterWidget(InUserWidget);
+
+	ULKExpWidget* ExpWidget = Cast<ULKExpWidget>(InUserWidget);
+	if (ExpWidget)
+	{
+		ExpWidget->UpdateExpGuage(Stat->GetCurrentExp(), Stat->GetBaseStat().Exp);
+		ExpWidget->UpdateExpLevel(Stat->GetCurrentLevel());
+
+		Stat->OnExpChanged.AddUObject(ExpWidget, &ULKExpWidget::UpdateExpGuage);
+		Stat->OnLevelUp.AddUObject(ExpWidget, &ULKExpWidget::UpdateExpLevel);
+	}
+}

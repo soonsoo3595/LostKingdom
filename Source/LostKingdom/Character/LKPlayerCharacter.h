@@ -56,4 +56,8 @@ private:
 	FRotator ZoomInRotation;
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
 	FRotator ZoomOutRotation;
+
+// UI
+protected:
+	virtual void SetupCharacterWidget(class ULKUserWidget* InUserWidget) override;
 };
