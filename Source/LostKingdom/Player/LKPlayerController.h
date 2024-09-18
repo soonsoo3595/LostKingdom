@@ -37,10 +37,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomAction;
 
-	/** Roll Action **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))	
-	class UInputAction* RollAction;
-
 	/** Attack Action**/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* AttackAction;
@@ -60,9 +56,6 @@ protected:
 	void OnZoomIn();
 	void OnZoomOut();
 
-	void OnRollTriggered(const FInputActionValue& Value);
-	void OnRollCooldownCompleted();
-
 	/* Attack */
 	void OnAttackTriggered();
 	void OnAttackCompleted();
@@ -75,19 +68,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class ULKMainHUD> MainHUD;
 
-
 protected:
-	FTimerHandle CooldownTimerHandle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Roll)
-	float RollCooldownTime;
+	UPROPERTY()
+	TObjectPtr<class ALKPlayerCharacter> PlayerCharacter;
 
 private:
 	FVector Destination;
 	/* Is Zoom in? */
 	uint8 bZooming : 1;
-
-	/* Can Roll? */
-	uint8 bCanRoll : 1;
-
 };

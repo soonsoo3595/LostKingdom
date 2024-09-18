@@ -15,6 +15,8 @@ ULKPlayerCharacterStatComponent::ULKPlayerCharacterStatComponent()
 
 void ULKPlayerCharacterStatComponent::BeginPlay()
 {
+	Super::BeginPlay();
+
 	// SetBattleStat(TestBattleStat);
 }
 

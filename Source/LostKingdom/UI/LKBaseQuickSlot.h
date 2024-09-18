@@ -3,30 +3,31 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/LKUserWidget.h"
 #include "LKBaseQuickSlot.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ULKBaseQuickSlot : public UUserWidget
+class LOSTKINGDOM_API ULKBaseQuickSlot : public ULKUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	ULKBaseQuickSlot(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "QuickSlot")
-	virtual bool CanDrop(UObject* DropObject) const;
-
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	FORCEINLINE virtual void OnKeyInput() { UseSlot(); }
+	virtual void UpdateSlot();
+	virtual bool UseSlot();
 
 	virtual void SetImage();
-	void SetKey();
-
-	virtual void UseSlot();
+	virtual void OnCooldownEnd();
+	void SetMappedKey();
 
 // Input
 protected:
@@ -44,6 +45,15 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<class UTextBlock> KeyText;
 
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<class ULKRoundProgressbar> CoolDownProgressBar;
+
+// Cool Down	
 protected:
-	uint8 bIsEmpty : 1;
+	FTimerHandle CooldownTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CoolDown")
+	float CooldownTime;
+
+	uint8 bIsCoolDown : 1;
 };

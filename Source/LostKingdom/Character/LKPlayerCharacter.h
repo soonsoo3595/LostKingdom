@@ -30,8 +30,6 @@ public:
 	FORCEINLINE void ZoomIn() { bZoomIn = true; }
 	FORCEINLINE void ZoomOut() { bZoomIn = false; }
 
-	void Roll();
-
 protected:
 	/** Spring Arm */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -39,10 +37,6 @@ protected:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-
-	// Montage
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	TObjectPtr<UAnimMontage> RollMontage;
 
 private:
 	uint8 bZoomIn : 1;

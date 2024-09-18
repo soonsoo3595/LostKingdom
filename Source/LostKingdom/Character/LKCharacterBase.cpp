@@ -7,6 +7,8 @@
 #include "CharacterStat/LKCharacterStatComponent.h"
 #include "UI/LKWidgetComponent.h"
 #include "UI/LKHUDWidget.h"
+#include "Skill/LKBaseSkill.h"	
+#include "Skill/LKSkillData.h"
 
 // Sets default values
 ALKCharacterBase::ALKCharacterBase()
@@ -50,6 +52,8 @@ ALKCharacterBase::ALKCharacterBase()
 		HUD->SetDrawSize(FVector2D(150.0f, 50.0f));
 		HUD->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+
+	bUseSkill = false;
 }
 
 void ALKCharacterBase::PostInitializeComponents()
@@ -67,6 +71,8 @@ void ALKCharacterBase::PostInitializeComponents()
 /// </summary>
 void ALKCharacterBase::ProcessCombo()
 {
+	if (bUseSkill) return;
+
 	if (CurrentCombo == 0)
 	{
 		ComboAttackBegin();
@@ -162,6 +168,43 @@ void ALKCharacterBase::LookAt()
 
 		SetActorRotation(CurrentRotation);
 	}
+}
+
+bool ALKCharacterBase::UseSkill(ULKBaseSkill* Skill)
+{
+	if (Skill)
+	{
+		// If you are using the skill, you will return false, but if the skill can be canceled, proceed as it is
+		if (bUseSkill && Skill->Data->bCanCancel == false)
+		{
+			return false;
+		}
+
+		Skill->Use(this);
+		LookAt();
+
+		UAnimMontage* Montage = Skill->Data->SkillMontage;
+		OnSkillStart(Montage);
+	}
+
+	return true;
+}
+
+void ALKCharacterBase::OnSkillStart(UAnimMontage* TargetMontage)
+{
+	GetController()->StopMovement();
+	AnimInstance->Montage_Play(TargetMontage);
+
+	bUseSkill = true;
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &ALKCharacterBase::OnSkillEnd);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, TargetMontage);
+}
+
+void ALKCharacterBase::OnSkillEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
+{
+	bUseSkill = false;
 }
 
 float ALKCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

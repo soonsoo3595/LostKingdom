@@ -15,7 +15,6 @@ class LOSTKINGDOM_API ULKMainHUD : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 
 protected:

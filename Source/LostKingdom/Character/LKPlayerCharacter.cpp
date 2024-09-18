@@ -55,12 +55,6 @@ void ALKPlayerCharacter::PostInitializeComponents()
 	}
 }
 
-void ALKPlayerCharacter::Roll()
-{
-	AnimInstance->Montage_Play(RollMontage);
-}
-
-
 void ALKPlayerCharacter::AttackStart()
 {
 	Super::AttackStart();

@@ -18,6 +18,9 @@ public:
 	FORCEINLINE void SetOwner(AActor* NewOwner) { Owner = NewOwner; }
 
 protected:
+	virtual void NativeOnInitialized() override;
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Actor")
 	TObjectPtr<AActor> Owner;
 };

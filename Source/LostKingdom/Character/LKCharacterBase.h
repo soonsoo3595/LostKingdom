@@ -32,12 +32,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<class UAnimMontage> AttackMontage;
 
+public:
 	virtual void ProcessCombo() override;
 	FORCEINLINE virtual void AttackComplete() override { HasNextComboInput = false; }
 	FORCEINLINE virtual void AttackStart() override { }
 	FORCEINLINE virtual void AttackEnd() override { WeaponComponent->SetCollisionProfileName(TEXT("NoCollision")); }
 	FORCEINLINE virtual void ComboAttackCheck() override { ComboCheck(); }
 
+protected:
 	UFUNCTION()
 	virtual void OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -54,6 +56,15 @@ protected:
 
 	// 노티파이 이전에 입력이 들어왔는지
 	bool HasNextComboInput = false;
+
+// Skill Section
+public:
+	virtual bool UseSkill(class ULKBaseSkill* Skill);
+	virtual void OnSkillStart(class UAnimMontage* TargetMontage);
+	virtual void OnSkillEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+
+protected:
+	uint8 bUseSkill : 1;	// Check if the skill is being used
 
 // Dead Section
 protected:

@@ -3,3 +3,10 @@
 
 #include "UI/LKUserWidget.h"
 
+void ULKUserWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+
+	Owner = GetOwningPlayerPawn();
+}
+
