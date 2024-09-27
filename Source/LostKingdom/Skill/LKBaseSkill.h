@@ -19,6 +19,7 @@ protected:
 
 public:
 	virtual void Use(class ALKCharacterBase* Caster);
+	virtual void Complete();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
@@ -31,4 +32,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
 	TSubclassOf<class ULKBaseBuff> BuffClass;
 
+	UPROPERTY()
+	TObjectPtr<class UAnimInstance> AnimInstance;
 };

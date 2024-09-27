@@ -21,6 +21,8 @@ class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInte
 public:
 	ALKCharacterBase();
 
+	FORCEINLINE UAnimInstance* GetAnimInstance() const { return AnimInstance; }
+
 protected:
 	virtual void PostInitializeComponents() override;
 
@@ -64,7 +66,6 @@ protected:
 // Skill Section
 public:
 	virtual bool UseSkill(class ULKBaseSkill* Skill);
-	virtual void OnSkillStart(class UAnimMontage* TargetMontage);
 	virtual void OnSkillEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
 
 protected:

@@ -65,6 +65,14 @@ void ULKSkillQuickSlot::NativeOnDragDetected(const FGeometry& InGeometry, const 
 	}
 }
 
+void ULKSkillQuickSlot::OnKeyInputComplete()
+{
+	if (Skill)
+	{
+		Skill->Complete();
+	}
+}
+
 void ULKSkillQuickSlot::SetImage()
 {
 	if (Skill)

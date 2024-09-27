@@ -184,26 +184,13 @@ bool ALKCharacterBase::UseSkill(ULKBaseSkill* Skill)
 			return false;
 		}
 
-		Skill->Use(this);
+		GetController()->StopMovement();
 		LookAt();
-
-		UAnimMontage* Montage = Skill->Data->SkillMontage;
-		OnSkillStart(Montage);
+		bUseSkill = true;
+		Skill->Use(this);
 	}
 
 	return true;
-}
-
-void ALKCharacterBase::OnSkillStart(UAnimMontage* TargetMontage)
-{
-	GetController()->StopMovement();
-	AnimInstance->Montage_Play(TargetMontage, Stat->GetSpeed());
-
-	bUseSkill = true;
-
-	FOnMontageEnded EndDelegate;
-	EndDelegate.BindUObject(this, &ALKCharacterBase::OnSkillEnd);
-	AnimInstance->Montage_SetEndDelegate(EndDelegate, TargetMontage);
 }
 
 void ALKCharacterBase::OnSkillEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)

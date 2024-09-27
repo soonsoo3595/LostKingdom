@@ -22,9 +22,15 @@ void ULKBaseQuickSlot::NativeConstruct()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(GetWorld()->GetFirstPlayerController()->InputComponent))
 	{
 		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Started, this, &ULKBaseQuickSlot::OnKeyInput);
+		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Completed, this, &ULKBaseQuickSlot::OnKeyInputComplete);
 	}
 
 	SetMappedKey();
+}
+
+void ULKBaseQuickSlot::OnKeyInputComplete()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnKeyInputComplete"));
 }
 
 void ULKBaseQuickSlot::UpdateSlot()

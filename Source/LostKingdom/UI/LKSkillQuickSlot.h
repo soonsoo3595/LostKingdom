@@ -21,6 +21,7 @@ protected:
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 
 protected:
+	virtual void OnKeyInputComplete() override;
 	virtual void SetImage() override;
 	virtual void UpdateSlot() override;
 	virtual bool UseSlot() override;

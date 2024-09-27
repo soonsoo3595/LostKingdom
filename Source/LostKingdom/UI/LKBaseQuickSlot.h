@@ -22,6 +22,7 @@ protected:
 
 protected:
 	FORCEINLINE virtual void OnKeyInput() { UseSlot(); }
+	virtual void OnKeyInputComplete();
 	virtual void UpdateSlot();
 	virtual bool UseSlot();
 
