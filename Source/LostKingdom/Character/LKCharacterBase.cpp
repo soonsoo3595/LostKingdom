@@ -9,6 +9,7 @@
 #include "UI/LKHUDWidget.h"
 #include "Skill/LKBaseSkill.h"	
 #include "Skill/LKSkillData.h"
+#include "Buff/LKBaseBuff.h"
 
 // Sets default values
 ALKCharacterBase::ALKCharacterBase()
@@ -63,7 +64,10 @@ void ALKCharacterBase::PostInitializeComponents()
 
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &ALKCharacterBase::OnAttack);
 
-	Stat->OnHPZero.AddUObject(this, &ALKCharacterBase::SetDead);
+	if (Stat)
+	{
+		Stat->OnHPZero.AddUObject(this, &ALKCharacterBase::SetDead);
+	}
 }
 
 /// <summary>
@@ -193,7 +197,7 @@ bool ALKCharacterBase::UseSkill(ULKBaseSkill* Skill)
 void ALKCharacterBase::OnSkillStart(UAnimMontage* TargetMontage)
 {
 	GetController()->StopMovement();
-	AnimInstance->Montage_Play(TargetMontage);
+	AnimInstance->Montage_Play(TargetMontage, Stat->GetSpeed());
 
 	bUseSkill = true;
 
@@ -205,6 +209,36 @@ void ALKCharacterBase::OnSkillStart(UAnimMontage* TargetMontage)
 void ALKCharacterBase::OnSkillEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
 {
 	bUseSkill = false;
+}
+
+void ALKCharacterBase::AddBuff(ULKBaseBuff* Buff)
+{
+	if (Buff)
+	{
+		if (ActiveBuffs.Contains(Buff) == false)
+		{
+			ActiveBuffs.Add(Buff);
+			Buff->OnBuffStart(this);
+		}
+		else
+		{
+			Buff->OnBuffReset();
+		}
+
+		OnBuffAdded.Broadcast(Buff);
+	}
+}
+
+void ALKCharacterBase::RemoveBuff(ULKBaseBuff* Buff)
+{
+	if (Buff)
+	{
+		if (ActiveBuffs.Contains(Buff))
+		{
+			ActiveBuffs.Remove(Buff);
+			OnBuffRemoved.Broadcast(Buff);
+		}
+	}
 }
 
 float ALKCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -234,7 +268,7 @@ void ALKCharacterBase::PlayDeadAnimation()
 
 void ALKCharacterBase::SetupCharacterWidget(ULKUserWidget* InUserWidget)
 {
-	ULKHUDWidget *HUDWidget = Cast<ULKHUDWidget>(InUserWidget);
+	ULKHUDWidget* HUDWidget = Cast<ULKHUDWidget>(InUserWidget);
 	if (HUDWidget)
 	{
 		HUDWidget->SetMaxHP(Stat->GetFinalStat().MaxHP);

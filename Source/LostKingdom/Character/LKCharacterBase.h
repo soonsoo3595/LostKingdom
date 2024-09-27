@@ -7,7 +7,11 @@
 #include "Interface/LKAttackInterface.h"
 #include "Interface/LKCharacterWidgetInterface.h"
 #include "Components/CapsuleComponent.h"
+#include "Buff/LKBaseBuff.h"
 #include "LKCharacterBase.generated.h"
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBuffAddedDelegate, ULKBaseBuff*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBuffRemovedDelegate, ULKBaseBuff*);
 
 UCLASS()
 class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInterface, public ILKCharacterWidgetInterface
@@ -66,6 +70,18 @@ public:
 protected:
 	uint8 bUseSkill : 1;	// Check if the skill is being used
 
+// Buff Section
+public:
+	FOnBuffAddedDelegate OnBuffAdded;
+	FOnBuffRemovedDelegate OnBuffRemoved;
+
+	virtual void AddBuff(class ULKBaseBuff* Buff);
+	virtual void RemoveBuff(class ULKBaseBuff* Buff);
+
+protected:
+	UPROPERTY()
+	TSet<class ULKBaseBuff*> ActiveBuffs;
+	
 // Dead Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
@@ -78,8 +94,8 @@ protected:
 	uint8 bIsDead : 1;
 
 // Stat Section
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class ULKCharacterStatComponent> Stat;
 
 // UI Widget Section
