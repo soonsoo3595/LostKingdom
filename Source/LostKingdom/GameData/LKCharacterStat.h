@@ -35,7 +35,23 @@ public:
 		int32 StatNum = sizeof(FLKCharacterStat) / sizeof(float);
 		for (int32 i = 0; i < StatNum; ++i)
 		{
-			ResultPtr[i] = ThisPtr[i] + OtherPtr[i];
+			ResultPtr[i] = FMath::Clamp(ThisPtr[i] + OtherPtr[i], 0.0f, FLT_MAX);
+		}
+
+		return Result;
+	}
+
+	FLKCharacterStat operator*(float Value) const
+	{
+		const float* const ThisPtr = reinterpret_cast<const float* const>(this);
+
+		FLKCharacterStat Result;
+		float* ResultPtr = reinterpret_cast<float*>(&Result);
+
+		int32 StatNum = sizeof(FLKCharacterStat) / sizeof(float);
+		for (int32 i = 0; i < StatNum; ++i)
+		{
+			ResultPtr[i] = ThisPtr[i] * Value;
 		}
 
 		return Result;

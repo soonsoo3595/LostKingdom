@@ -2,7 +2,6 @@
 
 
 #include "CharacterStat/LKCharacterStatComponent.h"
-#include "GameData/LKGameSingleton.h"
 
 ULKCharacterStatComponent::ULKCharacterStatComponent()
 {
@@ -18,28 +17,6 @@ void ULKCharacterStatComponent::InitializeComponent()
 
 	SetLevelStat(CurrentLevel);
 	SetHP(BaseStat.MaxHP);
-}
-
-void ULKCharacterStatComponent::SetLevelStat(int32 InNewLevel)
-{
-	CurrentLevel = FMath::Clamp(InNewLevel, 1, ULKGameSingleton::Get().CharacterMaxLevel);
-	SetBaseStat(ULKGameSingleton::Get().GetEnemyStat(CurrentLevel));
-	check(BaseStat.MaxHP > 0);
-}
-
-void ULKCharacterStatComponent::AddExp(int32 InExp)
-{
-	CurrentExp += InExp;
-
-	if (CurrentExp >= BaseStat.Exp)
-	{
-		CurrentExp = FMath::Clamp(CurrentExp - BaseStat.Exp, 0, BaseStat.Exp);
-		SetLevelStat(CurrentLevel + 1);
-		SetHP(BaseStat.MaxHP);
-		OnLevelUp.Broadcast(CurrentLevel);
-	}
-
-	OnExpChanged.Broadcast(CurrentExp, BaseStat.Exp);
 }
 
 float ULKCharacterStatComponent::ApplyDamage(float InDamage)
@@ -69,5 +46,14 @@ void ULKCharacterStatComponent::SetHP(float NewHP)
 {
 	CurrentHP = FMath::Clamp<float>(NewHP, 0, BaseStat.MaxHP);
 	OnHPChanged.Broadcast(CurrentHP);
+}
+
+void ULKCharacterStatComponent::UpdateBattleStat()
+{
+	BattleStat.CritPercent = BattleProperty.GetCritical();
+	BattleStat.SpecialPercent = BattleProperty.GetSpecial();
+	BattleStat.SpeedPercent = BattleProperty.GetSpeed();
+
+	OnBattleStatChanged.Broadcast();
 }
 

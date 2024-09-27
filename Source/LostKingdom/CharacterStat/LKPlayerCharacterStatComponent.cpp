@@ -4,60 +4,23 @@
 #include "CharacterStat/LKPlayerCharacterStatComponent.h"
 #include "GameData/LKGameSingleton.h"
 
-ULKPlayerCharacterStatComponent::ULKPlayerCharacterStatComponent()
-{
-	CriticalRate = 0.036f;
-	SpecialRate = 0.1f;
-	SpeedRate = 0.02f;
-
-	bWantsInitializeComponent = true;
-}
-
-void ULKPlayerCharacterStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// SetBattleStat(TestBattleStat);
-}
-
 void ULKPlayerCharacterStatComponent::SetLevelStat(int32 InNewLevel)
 {
 	CurrentLevel = FMath::Clamp(InNewLevel, 1, ULKGameSingleton::Get().CharacterMaxLevel);
 	SetBaseStat(ULKGameSingleton::Get().GetPlayerStat(CurrentLevel));
-	check(BaseStat.MaxHP > 0);
 }
 
-void ULKPlayerCharacterStatComponent::UpdateStat()
+void ULKPlayerCharacterStatComponent::AddExp(int32 InExp)
 {
-	CritPercent = (BattleStat.Crit * CriticalRate) / 100;
-	SpecialPercent = (BattleStat.Special * SpecialRate) / 100;
-	SpeedPercent = (BattleStat.Speed * SpeedRate) / 100;
-}
+	CurrentExp += InExp;
 
-void ULKPlayerCharacterStatComponent::SetBattleStat(const FLKBattleStat& InBattleStat)
-{
-	BattleStat = InBattleStat;
-	UpdateStat();
-	OnBattleStatChanged.Broadcast(BattleStat);
-}
+	if (CurrentExp >= BaseStat.Exp)
+	{
+		CurrentExp = FMath::Clamp(CurrentExp - BaseStat.Exp, 0, BaseStat.Exp);
+		SetLevelStat(CurrentLevel + 1);
+		SetHP(BaseStat.MaxHP);
+		OnLevelUp.Broadcast(CurrentLevel);
+	}
 
-void ULKPlayerCharacterStatComponent::AddBattleStat(const FLKBattleStat& InAddBattleStat)
-{
-	BattleStat = BattleStat + InAddBattleStat;
-	UpdateStat();
-	OnBattleStatChanged.Broadcast(BattleStat);
-}
-
-float ULKPlayerCharacterStatComponent::GetSpeed()
-{
-	float Speed = Super::GetSpeed();
-
-	Speed += SpeedPercent;
-
-	return Speed;
-}
-
-bool ULKPlayerCharacterStatComponent::CheckCriticalHit()
-{
-	return FMath::FRandRange(0.0f, 1.0f) <= CritPercent;
+	OnExpChanged.Broadcast(CurrentExp, BaseStat.Exp);
 }

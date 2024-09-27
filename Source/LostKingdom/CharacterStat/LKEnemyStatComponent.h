@@ -4,17 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "CharacterStat/LKCharacterStatComponent.h"
-#include "LKPlayerCharacterStatComponent.generated.h"
+#include "LKEnemyStatComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ULKPlayerCharacterStatComponent : public ULKCharacterStatComponent
+class LOSTKINGDOM_API ULKEnemyStatComponent : public ULKCharacterStatComponent
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void SetLevelStat(int32 InNewLevel) override;
-	virtual void AddExp(int32 InExp) override;
 };

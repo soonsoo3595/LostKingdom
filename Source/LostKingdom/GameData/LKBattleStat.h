@@ -9,31 +9,32 @@ struct FLKBattleStat
 	GENERATED_BODY()
 	
 public:
-	FLKBattleStat() : Crit(0.0f), Special(0.0f), Speed(0.0f){}
+	FLKBattleStat() : CritPercent(0.0f), SpecialPercent(0.0f), SpeedPercent(0.0f){}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Crit;			// Critical
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CritPercent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Special;		// Specialization
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SpecialPercent;		
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BattleStat")
-	float Speed;		// Speed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SpeedPercent;
 
 	FLKBattleStat operator+(const FLKBattleStat& Other) const
 	{
-		const float* const ThisPtr = reinterpret_cast<const float* const>(this);
-		const float* const OtherPtr = reinterpret_cast<const float* const>(&Other);
-
 		FLKBattleStat Result;
-		float* ResultPtr = reinterpret_cast<float*>(&Result);
+		Result.CritPercent = this->CritPercent + Other.CritPercent;
+		Result.SpecialPercent = this->SpecialPercent + Other.SpecialPercent;
+		Result.SpeedPercent = this->SpeedPercent + Other.SpeedPercent;
+		return Result;
+	}
 
-		int32 StatNum = sizeof(FLKBattleStat) / sizeof(float);
-		for (int32 i = 0; i < StatNum; ++i)
-		{
-			ResultPtr[i] = ThisPtr[i] + OtherPtr[i];
-		}
-
+	FLKBattleStat operator-(const FLKBattleStat& Other) const
+	{
+		FLKBattleStat Result;
+		Result.CritPercent = this->CritPercent - Other.CritPercent;
+		Result.SpecialPercent = this->SpecialPercent - Other.SpecialPercent;
+		Result.SpeedPercent = this->SpeedPercent - Other.SpeedPercent;
 		return Result;
 	}
 };

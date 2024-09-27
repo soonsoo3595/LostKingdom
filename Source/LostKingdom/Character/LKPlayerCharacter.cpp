@@ -5,9 +5,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "CharacterStat/LKCharacterStatComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "CharacterStat/LKPlayerCharacterStatComponent.h"
-#include "GameData/LKBattleStat.h"
 #include "UI/LKExpWidget.h"
 
 ALKPlayerCharacter::ALKPlayerCharacter()
@@ -48,10 +47,11 @@ void ALKPlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	ULKPlayerCharacterStatComponent* PlayerStat = Cast<ULKPlayerCharacterStatComponent>(Stat);
-	if (PlayerStat)
+	WalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+	if (Stat)
 	{
-		PlayerStat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
+		Stat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
 	}
 }
 
@@ -61,13 +61,11 @@ void ALKPlayerCharacter::AttackStart()
 	WeaponComponent->SetCollisionProfileName(TEXT("LKPlayerAttack"));
 }
 
-void ALKPlayerCharacter::OnBattleStatChanged(const FLKBattleStat& InBattleStat)
+void ALKPlayerCharacter::OnBattleStatChanged()
 {
-	UE_LOG(LogTemp, Log, TEXT("OnBattleStatChanged"));
-
 	// Speed Setting
-	float WalkSpeed = GetCharacterMovement()->MaxWalkSpeed * Stat->GetSpeed();
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	float NewWalkSpeed = WalkSpeed * Stat->GetSpeed();
+	GetCharacterMovement()->MaxWalkSpeed = NewWalkSpeed;
 }
 
 void ALKPlayerCharacter::SetupCharacterWidget(ULKUserWidget* InUserWidget)

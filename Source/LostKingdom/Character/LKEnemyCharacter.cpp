@@ -3,6 +3,7 @@
 
 #include "Character/LKEnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "CharacterStat/LKEnemyStatComponent.h"
 
 ALKEnemyCharacter::ALKEnemyCharacter()
 {

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/LKCharacterBase.h"
-#include "GameData/LKBattleStat.h"
+#include "GameData/LKBattleProperty.h"
 #include "LKPlayerCharacter.generated.h"
 
 /**
@@ -24,7 +24,7 @@ protected:
 	virtual void PostInitializeComponents() override;
 	virtual void AttackStart() override;
 
-	void OnBattleStatChanged(const FLKBattleStat& InBattleStat);
+	void OnBattleStatChanged();
 
 public:
 	FORCEINLINE void ZoomIn() { bZoomIn = true; }
@@ -50,6 +50,8 @@ private:
 	FRotator ZoomInRotation;
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivate))
 	FRotator ZoomOutRotation;
+
+	float WalkSpeed;
 
 // UI
 protected:

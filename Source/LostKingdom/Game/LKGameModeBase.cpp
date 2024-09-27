@@ -19,5 +19,4 @@ ALKGameModeBase::ALKGameModeBase()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
-	// PlayerControllerClass = ALKPlayerController::StaticClass();
 }
