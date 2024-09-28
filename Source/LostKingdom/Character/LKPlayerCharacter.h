@@ -19,12 +19,14 @@ public:
 	ALKPlayerCharacter();
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void AttackStart() override;
+	virtual void TriggerSpecialty();
 
 protected:
 	virtual void PostInitializeComponents() override;
-	virtual void AttackStart() override;
-
 	void OnBattleStatChanged();
+
+	virtual void AttackSuccess() override;
 
 public:
 	FORCEINLINE void ZoomIn() { bZoomIn = true; }
@@ -37,6 +39,10 @@ protected:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Specialty, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class ULKSpecialtyComponent> Specialty;
 
 private:
 	uint8 bZoomIn : 1;

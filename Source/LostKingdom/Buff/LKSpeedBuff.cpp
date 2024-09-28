@@ -2,9 +2,9 @@
 
 
 #include "Buff/LKSpeedBuff.h"
-#include "Buff/LKBuffData.h"
 #include "Character/LKCharacterBase.h"
 #include "CharacterStat/LKCharacterStatComponent.h"
+#include "Buff/LKBuffData.h"
 
 void ULKSpeedBuff::OnBuffStart(ALKCharacterBase* InTarget)
 {
@@ -12,7 +12,7 @@ void ULKSpeedBuff::OnBuffStart(ALKCharacterBase* InTarget)
 
 	if (Target)
 	{
-		Target->Stat->AddBattleBuffStat(BuffBattleStat);
+		Target->Stat->AddBattleBuffStat(Data->BuffBattleStat);
 	}
 } 
 
@@ -20,7 +20,7 @@ void ULKSpeedBuff::OnBuffEnd()
 {
 	if (Target)
 	{
-		Target->Stat->MinusBattleBuffStat(BuffBattleStat);
+		Target->Stat->MinusBattleBuffStat(Data->BuffBattleStat);
 	}
 
 	Super::OnBuffEnd();

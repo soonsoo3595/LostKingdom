@@ -57,6 +57,7 @@ void ALKPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALKPlayerController::OnAttackTriggered);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnAttackTriggered);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALKPlayerController::OnAttackCompleted);
+		EnhancedInputComponent->BindAction(SpecialtyAction, ETriggerEvent::Triggered, this, &ALKPlayerController::OnSpecialtyTriggered);
 	}
 }
 
@@ -133,5 +134,13 @@ void ALKPlayerController::OnAttackCompleted()
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->AttackComplete();
+	}
+}
+
+void ALKPlayerController::OnSpecialtyTriggered()
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->TriggerSpecialty();
 	}
 }

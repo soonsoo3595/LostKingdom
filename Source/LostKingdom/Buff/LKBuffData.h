@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GameData/LKBattleStat.h"
 #include "LKBuffData.generated.h"
 
 /**
@@ -29,4 +30,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Buff")
 	float BuffCoefficient;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
+	FLKBattleStat BuffBattleStat;
 };

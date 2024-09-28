@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Buff/LKBaseBuff.h"
-#include "LKSpeedBuff.generated.h"
+#include "LKDeathTranceBuff.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ULKSpeedBuff : public ULKBaseBuff
+class LOSTKINGDOM_API ULKDeathTranceBuff : public ULKBaseBuff
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	virtual void OnBuffStart(class ALKCharacterBase* InTarget) override;
 	virtual void OnBuffEnd() override;
 };

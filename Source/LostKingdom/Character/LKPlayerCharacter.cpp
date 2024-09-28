@@ -8,6 +8,8 @@
 #include "CharacterStat/LKCharacterStatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "UI/LKExpWidget.h"
+#include "Specialty/LKSpecialtyComponent.h"
+#include "UI/Specialty/LKSpecialtyWidget.h"
 
 ALKPlayerCharacter::ALKPlayerCharacter()
 {
@@ -24,6 +26,7 @@ ALKPlayerCharacter::ALKPlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	Specialty = CreateDefaultSubobject<ULKSpecialtyComponent>(TEXT("Specialty"));
 	bZoomIn = false;
 }
 
@@ -61,11 +64,28 @@ void ALKPlayerCharacter::AttackStart()
 	WeaponComponent->SetCollisionProfileName(TEXT("LKPlayerAttack"));
 }
 
+void ALKPlayerCharacter::TriggerSpecialty()
+{
+	if (Specialty && bUseSkill == false)
+	{
+		Specialty->UseSpecialty(this);
+	}
+}
+
 void ALKPlayerCharacter::OnBattleStatChanged()
 {
 	// Speed Setting
 	float NewWalkSpeed = WalkSpeed * Stat->GetSpeed();
 	GetCharacterMovement()->MaxWalkSpeed = NewWalkSpeed;
+}
+
+void ALKPlayerCharacter::AttackSuccess()
+{
+	if (Specialty)
+	{
+		float Guage = 5 * (1 + Stat->GetFinalBattleStat().SpecialPercent);
+		Specialty->AddOrbGuage(Guage);
+	}
 }
 
 void ALKPlayerCharacter::SetupCharacterWidget(ULKUserWidget* InUserWidget)
@@ -80,5 +100,12 @@ void ALKPlayerCharacter::SetupCharacterWidget(ULKUserWidget* InUserWidget)
 
 		Stat->OnExpChanged.AddUObject(ExpWidget, &ULKExpWidget::UpdateExpGuage);
 		Stat->OnLevelUp.AddUObject(ExpWidget, &ULKExpWidget::UpdateExpLevel);
+	}
+
+	ULKSpecialtyWidget* SpecialtyWidget = Cast<ULKSpecialtyWidget>(InUserWidget);
+	if (SpecialtyWidget)
+	{
+		Specialty->OnUpdateOrbDelegate.AddUObject(SpecialtyWidget, &ULKSpecialtyWidget::UpdateOrbs);
+		Specialty->OnUseSpecialtyDelegate.AddUObject(SpecialtyWidget, &ULKSpecialtyWidget::ChangeOrbColor);
 	}
 }

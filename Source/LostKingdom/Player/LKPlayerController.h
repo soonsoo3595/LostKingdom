@@ -41,6 +41,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* AttackAction;
 
+	/* Specialty Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SpecialtyAction;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -59,6 +63,9 @@ protected:
 	/* Attack */
 	void OnAttackTriggered();
 	void OnAttackCompleted();
+
+	/* Specialty */
+	void OnSpecialtyTriggered();
 
 // HUD
 protected:

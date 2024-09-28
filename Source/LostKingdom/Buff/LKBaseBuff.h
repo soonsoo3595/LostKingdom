@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "GameData/LKCharacterStat.h"
+
 #include "LKBaseBuff.generated.h"
 
 /**
@@ -23,6 +24,7 @@ public:
 	virtual void OnBuffReset();
 
 	FORCEINLINE class ULKBuffData* GetData() const { return Data; }
+	FORCEINLINE void SetData(class ULKBuffData* InData) { Data = InData; }
 
 protected:
 	UPROPERTY()
@@ -33,6 +35,6 @@ protected:
 
 	FTimerHandle BuffTimerHandle;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat", Meta = (AllowPrivateAccess = true))
 	FLKCharacterStat BuffStat;
 };

@@ -105,8 +105,14 @@ void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor
 			{
 				Stat->AddExp(Enemy->Stat->GetBaseStat().Exp);
 			}
+
+			AttackSuccess();
 		}
 	}
+}
+
+void ALKCharacterBase::AttackSuccess()
+{
 }
 
 void ALKCharacterBase::ComboAttackBegin()
