@@ -19,7 +19,6 @@ public:
 	ALKPlayerCharacter();
 
 	virtual void Tick(float DeltaTime) override;
-	virtual void AttackStart() override;
 	virtual void TriggerSpecialty();
 
 protected:

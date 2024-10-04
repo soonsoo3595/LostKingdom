@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/LKCharacterBase.h"
-#include "LKEnemyCharacter.generated.h"
+#include "Equipment/LKWeapon.h"
+#include "LKEnemyWeapon.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ALKEnemyCharacter : public ALKCharacterBase
+class LOSTKINGDOM_API ALKEnemyWeapon : public ALKWeapon
 {
 	GENERATED_BODY()
 	
 public:
-	ALKEnemyCharacter();
+	virtual void Attack() override;
 };

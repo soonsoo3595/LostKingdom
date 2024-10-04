@@ -6,7 +6,6 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CharacterStat/LKCharacterStatComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "UI/LKExpWidget.h"
 #include "Specialty/LKSpecialtyComponent.h"
 #include "UI/Specialty/LKSpecialtyWidget.h"
@@ -56,12 +55,6 @@ void ALKPlayerCharacter::PostInitializeComponents()
 	{
 		Stat->OnBattleStatChanged.AddUObject(this, &ALKPlayerCharacter::OnBattleStatChanged);
 	}
-}
-
-void ALKPlayerCharacter::AttackStart()
-{
-	Super::AttackStart();
-	WeaponComponent->SetCollisionProfileName(TEXT("LKPlayerAttack"));
 }
 
 void ALKPlayerCharacter::TriggerSpecialty()

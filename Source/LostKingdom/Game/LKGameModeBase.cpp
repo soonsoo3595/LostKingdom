@@ -7,7 +7,7 @@
 ALKGameModeBase::ALKGameModeBase()
 {
 	// Set Pawn
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("'/Game/LostKingdom/Blueprint/BP_LKPlayerCharacter.BP_LKPlayerCharacter_C'"));
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("'/Game/LostKingdom/Blueprint/BP_LKPlayer.BP_LKPlayer_C'"));
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;

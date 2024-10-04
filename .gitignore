@@ -867,3 +867,7 @@ Content/Gothic_Cathedral/Blueprints/BP_Candle_medium.uasset
 Content/Gothic_Cathedral/Blueprints/BP_Candle_long.uasset
 Content/Gothic_Cathedral/Blueprints/BP_Candle_big.uasset
 *.uasset
+Content/KnightGirl/Map/KNIGHTGIRL.umap
+Content/KnightGirl/Map/HighPriestess.umap
+Content/InfinityBladeGrassLands/Maps/Overview.umap
+Content/InfinityBladeGrassLands/Maps/ElvenRuins.umap

@@ -2,14 +2,15 @@
 
 
 #include "Character/LKCharacterBase.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Engine/DamageEvents.h"
 #include "CharacterStat/LKCharacterStatComponent.h"
 #include "UI/LKWidgetComponent.h"
 #include "UI/LKHUDWidget.h"
 #include "Skill/LKBaseSkill.h"	
 #include "Skill/LKSkillData.h"
 #include "Buff/LKBaseBuff.h"
+#include "Equipment/LKWeapon.h"
 
 // Sets default values
 ALKCharacterBase::ALKCharacterBase()
@@ -32,10 +33,6 @@ ALKCharacterBase::ALKCharacterBase()
 	}
 
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-
-	WeaponComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
-	WeaponComponent->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
-	WeaponComponent->SetCollisionProfileName(TEXT("NoCollision"));
 
 	// Stat
 	Stat = CreateDefaultSubobject<ULKCharacterStatComponent>(TEXT("Stat"));
@@ -62,11 +59,34 @@ void ALKCharacterBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	AnimInstance = GetMesh()->GetAnimInstance();
 
-	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &ALKCharacterBase::OnAttack);
-
 	if (Stat)
 	{
 		Stat->OnHPZero.AddUObject(this, &ALKCharacterBase::SetDead);
+	}
+}
+
+void ALKCharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	EquipWeapon();
+}
+
+void ALKCharacterBase::EquipWeapon()
+{
+	if (WeaponClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		Weapon = GetWorld()->SpawnActor<ALKWeapon>(WeaponClass, SpawnParams);
+		if (Weapon)
+		{
+			FName WeaponSocket(TEXT("WeaponSocket"));
+			Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponSocket);
+			Weapon->SetWeaponOwner(this);
+		}
 	}
 }
 
@@ -86,29 +106,43 @@ void ALKCharacterBase::ProcessCombo()
 	HasNextComboInput = true;
 }
 
-void ALKCharacterBase::OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ALKCharacterBase::AttackStart()
 {
-	// The more you attack in a row, the more damage you get
-	const float AttackDamage = Stat->GetAttack() * CurrentCombo;
-	UE_LOG(LogTemp, Warning, TEXT("Attack Damage: %f"), AttackDamage);
-
-	if (OtherActor)
+	if (Weapon)
 	{
-		ALKCharacterBase* Enemy = Cast<ALKCharacterBase>(OtherActor);
-		if (Enemy)
-		{
-			FDamageEvent DamageEvent;
-			Enemy->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-
-			// 적이 죽었을 때 경험치 획득
-			if (Enemy->bIsDead)
-			{
-				Stat->AddExp(Enemy->Stat->GetBaseStat().Exp);
-			}
-
-			AttackSuccess();
-		}
+		Weapon->Attack();
 	}
+}
+
+void ALKCharacterBase::AttackEnd()
+{
+	if (Weapon)
+	{
+		Weapon->StopAttack();
+	}
+}
+
+
+bool ALKCharacterBase::OnDamaged(AActor* DamageCauser, float Damage)
+{
+	if (DamageCauser)
+	{
+		float ActualDamage = Stat->ApplyDamage(Damage);
+		UE_LOG(LogTemp, Log, TEXT("Actual Damage: %f"), ActualDamage);
+
+		if (bIsDead)
+		{
+			ALKCharacterBase* Causer = Cast<ALKCharacterBase>(DamageCauser);
+			if (Causer)
+			{
+				Causer->Stat->AddExp(Stat->GetBaseStat().Exp);
+			}
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void ALKCharacterBase::AttackSuccess()
@@ -234,15 +268,6 @@ void ALKCharacterBase::RemoveBuff(ULKBaseBuff* Buff)
 	}
 }
 
-float ALKCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	Stat->ApplyDamage(DamageAmount);
-
-	return DamageAmount;
-}
-
 void ALKCharacterBase::SetDead()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -271,3 +296,4 @@ void ALKCharacterBase::SetupCharacterWidget(ULKUserWidget* InUserWidget)
 		Stat->OnHPChanged.AddUObject(HUDWidget, &ULKHUDWidget::UpdateHPBar);
 	}
 }
+

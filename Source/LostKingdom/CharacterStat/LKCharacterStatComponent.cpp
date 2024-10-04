@@ -36,10 +36,13 @@ float ULKCharacterStatComponent::ApplyDamage(float InDamage)
 float ULKCharacterStatComponent::GetAttack()
 {
 	float AttackPower = GetFinalStat().ATK;
+	float MinDamage = AttackPower - (AttackPower * 0.2f);
+	float MaxDamage = AttackPower + (AttackPower * 0.2f);	
+	float RandomDamage = FMath::FRandRange(MinDamage, MaxDamage);
 
-	CheckCriticalHit() ? AttackPower *= 2.0f : AttackPower;
+	CheckCriticalHit() ? RandomDamage *= 2.0f : RandomDamage;
 
-	return AttackPower;
+	return RandomDamage;
 }
 
 void ULKCharacterStatComponent::SetHP(float NewHP)

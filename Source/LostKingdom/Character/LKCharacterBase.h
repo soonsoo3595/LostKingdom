@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Interface/LKAttackInterface.h"
 #include "Interface/LKCharacterWidgetInterface.h"
-#include "Components/CapsuleComponent.h"
+#include "Interface/LKDamageInterface.h"
 #include "Buff/LKBaseBuff.h"
 #include "LKCharacterBase.generated.h"
 
@@ -14,7 +14,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnBuffAddedDelegate, ULKBaseBuff*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBuffRemovedDelegate, ULKBaseBuff*);
 
 UCLASS()
-class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInterface, public ILKCharacterWidgetInterface
+class LOSTKINGDOM_API ALKCharacterBase : public ACharacter, public ILKAttackInterface, public ILKCharacterWidgetInterface, public ILKDamageInterface
 {
 	GENERATED_BODY()
 
@@ -25,31 +25,38 @@ public:
 
 protected:
 	virtual void PostInitializeComponents() override;
+	virtual void BeginPlay() override;
 
 protected:
 	UPROPERTY()
 	class UAnimInstance* AnimInstance;
 
-// Attack Section
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
-	TObjectPtr<UCapsuleComponent> WeaponComponent;
+// Equip Section
+public:
+	virtual void EquipWeapon();
 
+protected:
+	UPROPERTY()
+	TObjectPtr<class ALKWeapon> Weapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipement")
+	TSubclassOf<class ALKWeapon> WeaponClass;
+
+// Attack Section
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<class UAnimMontage> AttackMontage;
 
 public:
 	virtual void ProcessCombo() override;
 	FORCEINLINE virtual void AttackComplete() override { HasNextComboInput = false; }
-	FORCEINLINE virtual void AttackStart() override { }
-	FORCEINLINE virtual void AttackEnd() override { WeaponComponent->SetCollisionProfileName(TEXT("NoCollision")); }
+	virtual void AttackStart() override;
+	virtual void AttackEnd() override;
+	virtual void AttackSuccess();
 	FORCEINLINE virtual void ComboAttackCheck() override { ComboCheck(); }
 
-protected:
-	UFUNCTION()
-	virtual void OnAttack(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	virtual void AttackSuccess();
+	virtual bool OnDamaged(AActor* DamageCauser, float Damage) override;
 
+protected:
 	void ComboAttackBegin();
 	void ComboAttackEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
 
@@ -89,7 +96,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimMontage> DeadMontage;
 
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void SetDead();
 
 	void PlayDeadAnimation();
@@ -106,4 +112,5 @@ protected:
 	TObjectPtr<class ULKWidgetComponent> HUD;
  
 	virtual void SetupCharacterWidget(class ULKUserWidget* InUserWidget) override;
+
 };
