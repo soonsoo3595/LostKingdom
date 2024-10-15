@@ -31,6 +31,10 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skill")
     int32 RequiredLevel;
 
+    // 스킬의 데미지 계수
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skill")
+    float SkillCoefficient;
+
     // 스킬의 쿨타임
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skill")
     float CooldownTime;

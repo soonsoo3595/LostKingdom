@@ -36,9 +36,7 @@ float ULKCharacterStatComponent::ApplyDamage(float InDamage)
 float ULKCharacterStatComponent::GetAttack()
 {
 	float AttackPower = GetFinalStat().ATK;
-	float MinDamage = AttackPower - (AttackPower * 0.2f);
-	float MaxDamage = AttackPower + (AttackPower * 0.2f);	
-	float RandomDamage = FMath::FRandRange(MinDamage, MaxDamage);
+	float RandomDamage = FMath::FRandRange(AttackPower * 0.9f, AttackPower * 1.1f);
 
 	CheckCriticalHit() ? RandomDamage *= 2.0f : RandomDamage;
 

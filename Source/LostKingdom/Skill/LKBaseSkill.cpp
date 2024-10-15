@@ -37,3 +37,7 @@ void ULKBaseSkill::Use(ALKCharacterBase* Caster)
 void ULKBaseSkill::Complete()
 {
 }
+
+void ULKBaseSkill::Attack(ALKCharacterBase* Caster)
+{
+}

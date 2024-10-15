@@ -26,4 +26,5 @@ public:
 	virtual void AttackStart() = 0;
 	virtual void AttackEnd() = 0;
 	virtual void ComboAttackCheck() = 0;
+	virtual void SkillAttack() = 0;
 };

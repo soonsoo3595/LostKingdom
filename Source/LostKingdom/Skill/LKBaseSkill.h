@@ -20,6 +20,7 @@ protected:
 public:
 	virtual void Use(class ALKCharacterBase* Caster);
 	virtual void Complete();
+	virtual void Attack(class ALKCharacterBase* Caster);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")

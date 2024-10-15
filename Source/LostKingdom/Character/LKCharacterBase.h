@@ -75,8 +75,12 @@ protected:
 public:
 	virtual bool UseSkill(class ULKBaseSkill* Skill);
 	virtual void OnSkillEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+	virtual void SkillAttack() override;
 
 protected:
+	UPROPERTY()
+	TObjectPtr<class ULKBaseSkill> CurrentSkill;
+
 	uint8 bUseSkill : 1;	// Check if the skill is being used
 
 // Buff Section

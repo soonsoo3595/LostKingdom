@@ -227,6 +227,7 @@ bool ALKCharacterBase::UseSkill(ULKBaseSkill* Skill)
 		GetController()->StopMovement();
 		LookAt();
 		bUseSkill = true;
+		CurrentSkill = Skill;
 		Skill->Use(this);
 	}
 
@@ -235,7 +236,16 @@ bool ALKCharacterBase::UseSkill(ULKBaseSkill* Skill)
 
 void ALKCharacterBase::OnSkillEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
 {
+	CurrentSkill = nullptr;
 	bUseSkill = false;
+}
+
+void ALKCharacterBase::SkillAttack()
+{
+	if (CurrentSkill)
+	{
+		CurrentSkill->Attack(this);
+	}
 }
 
 void ALKCharacterBase::AddBuff(ULKBaseBuff* Buff)
