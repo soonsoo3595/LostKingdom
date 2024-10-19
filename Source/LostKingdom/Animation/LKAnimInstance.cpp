@@ -7,6 +7,7 @@
 
 ULKAnimInstance::ULKAnimInstance()
 {
+	IdleTime = 0.f;
 	MovingThreshold = 3.f;
 }
 
@@ -30,5 +31,19 @@ void ULKAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Velocity = Owner->GetVelocity();
 		GroundSpeed = Velocity.Size2D();
 		bIsIdle = GroundSpeed < MovingThreshold;
+
+		if (bIsIdle)
+		{
+			IdleTime += DeltaSeconds;
+			if (IdleTime > 5.f)
+			{
+				bIsResting = true;
+			}
+		}
+		else
+		{
+			IdleTime = 0.f;
+			bIsResting = false;
+		}
 	}
 }

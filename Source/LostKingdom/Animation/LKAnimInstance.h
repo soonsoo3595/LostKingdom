@@ -38,5 +38,11 @@ protected:
 	uint8 bIsIdle : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
+	uint8 bIsResting : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
 	float MovingThreshold;
+
+protected:
+	float IdleTime;
 };
