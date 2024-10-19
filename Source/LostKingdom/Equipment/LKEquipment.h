@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Item/LKItem.h"
 #include "LKEquipment.generated.h"
 
 UCLASS()
-class LOSTKINGDOM_API ALKEquipment : public AActor
+class LOSTKINGDOM_API ALKEquipment : public ALKItem
 {
 	GENERATED_BODY()
 	

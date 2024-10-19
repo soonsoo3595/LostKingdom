@@ -59,6 +59,7 @@ void ULKSkillQuickSlot::NativeOnDragDetected(const FGeometry& InGeometry, const 
 	{
 		UDragDropOperation* DragOperation = NewObject<UDragDropOperation>();
 		DragOperation->DefaultDragVisual = Image;
+		DragOperation->DefaultDragVisual->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DragOperation->Payload = this;
 
 		OutOperation = DragOperation;
