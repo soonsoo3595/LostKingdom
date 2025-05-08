@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Type/LKAccountType.h"
+#include "Account/LKLoginSession.h"
 #include "LKAccountManager.generated.h"
 
 /**
@@ -20,9 +22,24 @@ protected:
 public:
 	static ULKAccountManager* Get(UWorld* WorldContext);
 
-	void RequestLogin(const FString& ID, const FString& PW, TFunction<void(bool, const FString&)> Callback);
-	void RequestRegister(const FString& ID, const FString& PW, TFunction<void(bool, const FString&)> Callback);
+	void RequestLogin(ELKProviderType LoginProviderType, TFunction<void(bool, const FString&)> Callback);
+	void RequestLogout(TFunction<void(bool, const FString&)> Callback);
+	void TryAutoLogin(TFunction<void(bool)> Callback);
+
+	void SaveLoginSession();
+	bool LoadLoginSession();
+	void ClearLoginSession();
+
+	bool IsLoggedIn() const { return LoginSession.IsValid(); }
+	const FLKLoginSession& GetSession() const { return LoginSession; }
 
 private:
+	void HandleLoginSuccess(const FString& Token, int32 AccountKey, const FGuid& UserKey);
+	FString GetToken(ELKProviderType LoginProviderType);
+
+private:
+	UPROPERTY()
+	FLKLoginSession LoginSession;
+
 	FString ServerURL;
 };

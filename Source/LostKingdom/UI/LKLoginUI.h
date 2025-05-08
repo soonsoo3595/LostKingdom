@@ -8,7 +8,7 @@
 
 class UButton;
 class UTextBlock;
-class UEditableText;
+class UOverlay;
 
 /**
  * 
@@ -24,29 +24,28 @@ protected:
 
 protected:
 	UFUNCTION()
-	void OnLoginButtonClicked();
+	void OnGuestLoginBtnClicked();
 
 	UFUNCTION()
-	void OnRegisterButtonClicked();
+	void OnLogoutBtnClicked();
 
-	void OnLoginResult(bool bSuccess, const FString& Message);
-	void OnRegisterResult(bool bSuccess, const FString& Message);
+	void OnLoginRequestAck(bool bSuccess, const FString& Message);
 
-	void SetResultText(const FString& Message);
+	void SetLoginPanel(bool bIsLoggedIn);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> ResultText;
+	TObjectPtr<UOverlay> Panel_PreLogin;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UEditableText> InputText_ID;
+	TObjectPtr<UOverlay> Panel_PostLogin;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UEditableText> InputText_PW;
+	TObjectPtr<UButton> Btn_Login_Guest;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> LoginBtn;
+	TObjectPtr<UButton> Btn_Start;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> RegisterBtn;
+	TObjectPtr<UButton> Btn_Logout;
 };
