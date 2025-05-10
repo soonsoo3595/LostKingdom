@@ -8,6 +8,8 @@
 #include "Account/LKLoginSession.h"
 #include "LKAccountManager.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLoginRequestAckSignature, bool /* Is Login */, const FString& /* Message */);
+
 /**
  * 
  */
@@ -22,9 +24,11 @@ protected:
 public:
 	static ULKAccountManager* Get(UWorld* WorldContext);
 
-	void RequestLogin(ELKProviderType LoginProviderType, TFunction<void(bool, const FString&)> Callback);
-	void RequestLogout(TFunction<void(bool, const FString&)> Callback);
-	void TryAutoLogin(TFunction<void(bool)> Callback);
+	void RequestLogin(ELKProviderType LoginProviderType, const FString& InToken = TEXT(""));
+	void RequestLogout();
+	void TryAutoLogin();
+
+	void RequestGoogleLoginWithAuthCode(const FString& AuthCode);
 
 	void SaveLoginSession();
 	bool LoadLoginSession();
@@ -32,6 +36,9 @@ public:
 
 	bool IsLoggedIn() const { return LoginSession.IsValid(); }
 	const FLKLoginSession& GetSession() const { return LoginSession; }
+
+public:
+	FOnLoginRequestAckSignature OnLoginRequestAck;
 
 private:
 	void HandleLoginSuccess(const FString& Token, int32 AccountKey, const FGuid& UserKey);
@@ -42,4 +49,12 @@ private:
 	FLKLoginSession LoginSession;
 
 	FString ServerURL;
+
+private:
+	UPROPERTY()
+	TObjectPtr<class UOAuthTcpListener> OAuthListener;
+
+public:
+	void StartOAuthListener();
+	void StopOAuthListener();
 };

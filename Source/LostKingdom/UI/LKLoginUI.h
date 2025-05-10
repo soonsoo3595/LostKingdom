@@ -27,6 +27,9 @@ protected:
 	void OnGuestLoginBtnClicked();
 
 	UFUNCTION()
+	void OnGoogleLoginBtnClicked();
+
+	UFUNCTION()
 	void OnLogoutBtnClicked();
 
 	void OnLoginRequestAck(bool bSuccess, const FString& Message);
@@ -42,6 +45,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Login_Guest;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Login_Google;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Start;

@@ -10,6 +10,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializer.h"
+#include "OAuthTcpListener.h"
 
 void ULKAccountManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -31,11 +32,11 @@ ULKAccountManager* ULKAccountManager::Get(UWorld* WorldContext)
 	return nullptr;
 }
 
-void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, TFunction<void(bool, const FString&)> Callback)
+void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, const FString& InToken /*= TEXT("")*/)
 {
 	if (IsLoggedIn())
 	{
-		Callback(false, TEXT("이미 로그인 되어 있습니다"));
+		OnLoginRequestAck.Broadcast(false, TEXT("이미 로그인 되어 있습니다"));
 		return;
 	}
 
@@ -51,17 +52,22 @@ void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, TFunctio
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("providerType"), static_cast<int32>(LoginProviderType));
 
-	FString Token = GetToken(LoginProviderType);
+	FString Token = InToken;
+	if (Token.IsEmpty())
+	{
+		Token = GetToken(LoginProviderType);
+	}
+
 	Writer->WriteValue(TEXT("token"), Token);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 	Request->SetContentAsString(JsonString);
 
-	Request->OnProcessRequestComplete().BindLambda([this, Callback](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 		{
 			if (!bSuccess || !Response.IsValid())
 			{
-				Callback(false, TEXT("서버 연결에 실패했습니다"));
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 연결에 실패했습니다"));
 				return;
 			}
 
@@ -70,7 +76,7 @@ void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, TFunctio
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 			if (!FJsonSerializer::Deserialize(Reader, JsonObject))
 			{
-				Callback(false, TEXT("서버 응답을 처리할 수 없습니다"));
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 응답을 파싱할 수 없습니다"));
 				return;
 			}
 
@@ -78,7 +84,7 @@ void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, TFunctio
 			if (!bLoginSuccess)
 			{
 				FString ErrorMessage = JsonObject->GetStringField(TEXT("message"));
-				Callback(false, ErrorMessage);
+				OnLoginRequestAck.Broadcast(false, ErrorMessage);
 				return;
 			}
 
@@ -91,24 +97,24 @@ void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, TFunctio
 			FGuid::Parse(UserKeyStr, UserKey);
 
 			HandleLoginSuccess(Token, AccountKey, UserKey);
-			Callback(true, TEXT("로그인 성공"));
+			OnLoginRequestAck.Broadcast(true, TEXT("로그인 성공"));
 		});
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
-void ULKAccountManager::RequestLogout(TFunction<void(bool, const FString&)> Callback)
+void ULKAccountManager::RequestLogout()
 {
 	if (IsLoggedIn() == false)
 	{
-		Callback(false, TEXT("현재 로그인 상태가 아닙니다."));
+		OnLoginRequestAck.Broadcast(false, TEXT("현재 로그인 상태가 아닙니다."));
 		return;
 	}
 
 	if (LoginSession.IsValid() == false)
 	{
-		Callback(false, TEXT("로그인 세션이 유효하지 않습니다."));
+		OnLoginRequestAck.Broadcast(false, TEXT("로그인 세션이 유효하지 않습니다."));
 		return;
 	}
 
@@ -117,33 +123,33 @@ void ULKAccountManager::RequestLogout(TFunction<void(bool, const FString&)> Call
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
 
-	Request->OnProcessRequestComplete().BindLambda([this, Callback](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 		{
 			if (!bSuccess || !Response.IsValid())
 			{
-				Callback(false, TEXT("서버 연결에 실패했습니다"));
+				OnLoginRequestAck.Broadcast(true, TEXT("서버 연결에 실패했습니다"));
 				return;
 			}
 
 			if (Response->GetResponseCode() == 200)
 			{
 				ClearLoginSession();
-				Callback(true, TEXT("로그아웃 완료"));
+				OnLoginRequestAck.Broadcast(false, TEXT("로그아웃 성공"));
 			}
 			else
 			{
-				Callback(false, TEXT("로그아웃 실패"));
+				OnLoginRequestAck.Broadcast(true, TEXT("로그아웃 실패"));
 			}
 		});
 
 	Request->ProcessRequest();
 }
 
-void ULKAccountManager::TryAutoLogin(TFunction<void(bool)> Callback)
+void ULKAccountManager::TryAutoLogin()
 {
 	if (LoadLoginSession() == false)
 	{
-		Callback(false);
+		OnLoginRequestAck.Broadcast(false, TEXT(""));
 		return;
 	}
 
@@ -152,18 +158,72 @@ void ULKAccountManager::TryAutoLogin(TFunction<void(bool)> Callback)
 	Request->SetVerb(TEXT("GET"));
 	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
 
-	Request->OnProcessRequestComplete().BindLambda([this, Callback](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 	{
 		if (bSuccess && Response.IsValid() && Response->GetResponseCode() == 200)
 		{
-			Callback(true);
+			OnLoginRequestAck.Broadcast(true, TEXT("자동 로그인 성공"));
 		}
 		else
 		{
 			ClearLoginSession();
-			Callback(false);
+			OnLoginRequestAck.Broadcast(false, TEXT("자동 로그인 실패"));
 		}
 	});
+
+	Request->ProcessRequest();
+}
+
+void ULKAccountManager::RequestGoogleLoginWithAuthCode(const FString& AuthCode)
+{
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(ServerURL + "/api/auth/google-login");
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("code"), AuthCode);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	Request->SetContentAsString(JsonString);
+
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+		{
+			if (!bSuccess || !Response.IsValid())
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 연결 실패"));
+				return;
+			}
+
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (!FJsonSerializer::Deserialize(Reader, JsonObject))
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("응답 파싱 실패"));
+				return;
+			}
+
+			if (!JsonObject->GetBoolField("success"))
+			{
+				OnLoginRequestAck.Broadcast(false, JsonObject->GetStringField("message"));
+				return;
+			}
+
+			const TSharedPtr<FJsonObject> Data = JsonObject->GetObjectField("data");
+			const FString Token = Data->GetStringField("token");
+			const int32 AccountKey = Data->GetIntegerField("accountKey");
+			const FString UserKeyStr = Data->GetStringField("userKey");
+
+			FGuid UserKey;
+			FGuid::Parse(UserKeyStr, UserKey);
+
+			const double EndTime = FPlatformTime::Seconds();
+			HandleLoginSuccess(Token, AccountKey, UserKey);
+			OnLoginRequestAck.Broadcast(true, TEXT("로그인 성공"));
+		});
 
 	Request->ProcessRequest();
 }
@@ -212,4 +272,37 @@ FString ULKAccountManager::GetToken(ELKProviderType LoginProviderType)
 	}
 
 	return TEXT("");
+}
+
+void ULKAccountManager::StartOAuthListener()
+{
+	if (OAuthListener == nullptr)
+	{
+		OAuthListener = NewObject<UOAuthTcpListener>();
+		if (OAuthListener->Start(5005, GetWorld()))
+		{
+			UE_LOG(LogTemp, Log, TEXT("[OAuth] Listener started"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[OAuth] Failed to start listener"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[OAuth] Listener already started"));
+	}
+}
+
+void ULKAccountManager::StopOAuthListener()
+{
+	if (OAuthListener)
+	{
+		OAuthListener->Stop();
+		OAuthListener = nullptr;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[OAuth] Listener not started"));
+	}
 }
