@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{72D1D52C-499C-BA94-1783-7EB5B42F0BE6}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "LostKingdom",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
