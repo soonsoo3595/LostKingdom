@@ -16,20 +16,12 @@ void ULKAccountManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	// Initialize the server URL
-	ServerURL = TEXT("https://localhost:7192");
-}
-
-ULKAccountManager* ULKAccountManager::Get(UWorld* WorldContext)
-{
-	if (WorldContext)
-	{
-		if (UGameInstance* GameInstance = WorldContext->GetGameInstance())
-		{
-			return GameInstance->GetSubsystem<ULKAccountManager>();
-		}
-	}
-	return nullptr;
+	GConfig->GetString(
+		TEXT("/Script/LostKingdom.LKAccountManager"),
+		TEXT("ServerURL"),
+		ServerURL,
+		GGameIni
+	);
 }
 
 void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, const FString& InToken /*= TEXT("")*/)

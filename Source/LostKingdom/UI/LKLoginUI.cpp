@@ -18,7 +18,7 @@ void ULKLoginUI::NativeConstruct()
 	Btn_Logout->OnClicked.AddDynamic(this, &ULKLoginUI::OnLogoutBtnClicked);
 	Btn_Start->OnClicked.AddDynamic(this, &ULKLoginUI::OnStartBtnClicked);
 
-	if (ULKAccountManager* AccountManager = ULKAccountManager::Get(GetWorld()))
+	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
 		AccountManager->OnLoginRequestAck.AddUObject(this, &ULKLoginUI::OnLoginRequestAck);
 		AccountManager->StartOAuthListener();
@@ -35,7 +35,7 @@ void ULKLoginUI::NativeDestruct()
 	Btn_Logout->OnClicked.RemoveDynamic(this, &ULKLoginUI::OnLogoutBtnClicked);
 	Btn_Start->OnClicked.RemoveDynamic(this, &ULKLoginUI::OnStartBtnClicked);
 
-	if (ULKAccountManager* AccountManager = ULKAccountManager::Get(GetWorld()))
+	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
 		AccountManager->OnLoginRequestAck.RemoveAll(this);
 		AccountManager->StopOAuthListener();
@@ -44,7 +44,7 @@ void ULKLoginUI::NativeDestruct()
 
 void ULKLoginUI::OnGuestLoginBtnClicked()
 {
-	if (ULKAccountManager* AccountManager = ULKAccountManager::Get(GetWorld()))
+	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
 		AccountManager->RequestLogin(ELKProviderType::Guest);
 	}
@@ -70,7 +70,7 @@ void ULKLoginUI::OnGoogleLoginBtnClicked()
 
 void ULKLoginUI::OnLogoutBtnClicked()
 {
-	if (ULKAccountManager* AccountManager = ULKAccountManager::Get(GetWorld()))
+	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
 		AccountManager->RequestLogout();
 	}
@@ -78,7 +78,7 @@ void ULKLoginUI::OnLogoutBtnClicked()
 
 void ULKLoginUI::OnStartBtnClicked()
 {
-	if (ULKAccountManager* AccountManager = ULKAccountManager::Get(GetWorld()))
+	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
 		if (AccountManager->IsLoggedIn())
 		{

@@ -123,7 +123,7 @@ void UOAuthTcpListener::HandleClient(FSocket* ClientSocket)
 					{
 						UE_LOG(LogTemp, Log, TEXT("[OAuth] Entered AsyncTask"));
 
-						if (ULKAccountManager* AM = ULKAccountManager::Get(this->WorldContext))
+						if (ULKAccountManager* AM = ULKAccountManager::GetInstance(WorldContext))
 						{
 							UE_LOG(LogTemp, Log, TEXT("[OAuth] Calling RequestGoogleLoginWithAuthCode"));
 							AM->RequestGoogleLoginWithAuthCode(AuthCodeCopy);

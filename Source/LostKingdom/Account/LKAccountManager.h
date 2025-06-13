@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "LKGameInstanceSubsystem.h"
+#include "LKGameInstanceSubsystemTemplate.h"
 #include "Type/LKAccountType.h"
 #include "Account/LKLoginSession.h"
 #include "LKAccountManager.generated.h"
@@ -14,7 +15,7 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLoginRequestAckSignature, bool /* Is Log
  * 
  */
 UCLASS()
-class LOSTKINGDOM_API ULKAccountManager : public UGameInstanceSubsystem
+class LOSTKINGDOM_API ULKAccountManager : public ULKGameInstanceSubsystem, public TLKGameInstanceSubsystemBase<ULKAccountManager>
 {
 	GENERATED_BODY()
 	
@@ -22,8 +23,6 @@ protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
-	static ULKAccountManager* Get(UWorld* WorldContext);
-
 	void RequestLogin(ELKProviderType LoginProviderType, const FString& InToken = TEXT(""));
 	void RequestLogout();
 	void TryAutoLogin();
