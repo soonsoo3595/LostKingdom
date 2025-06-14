@@ -33,6 +33,8 @@ public:
 	bool LoadLoginSession();
 	void ClearLoginSession();
 
+	void ConnectToServer();
+
 	bool IsLoggedIn() const { return LoginSession.IsValid(); }
 	const FLKLoginSession& GetSession() const { return LoginSession; }
 
@@ -47,7 +49,8 @@ private:
 	UPROPERTY()
 	FLKLoginSession LoginSession;
 
-	FString ServerURL;
+	FString AuthServerURL;
+	FString GameServerURL;
 
 private:
 	UPROPERTY()

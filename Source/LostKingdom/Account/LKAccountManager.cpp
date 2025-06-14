@@ -18,8 +18,15 @@ void ULKAccountManager::Initialize(FSubsystemCollectionBase& Collection)
 
 	GConfig->GetString(
 		TEXT("/Script/LostKingdom.LKAccountManager"),
-		TEXT("ServerURL"),
-		ServerURL,
+		TEXT("AuthServerURL"),
+		AuthServerURL,
+		GGameIni
+	);
+
+	GConfig->GetString(
+		TEXT("/Script/LostKingdom.LKAccountManager"),
+		TEXT("GameServerURL"),
+		GameServerURL,
 		GGameIni
 	);
 }
@@ -34,7 +41,7 @@ void ULKAccountManager::RequestLogin(ELKProviderType LoginProviderType, const FS
 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL(FString::Printf(TEXT("%s/api/auth/login"), *ServerURL));
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/login"), *AuthServerURL));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
@@ -111,7 +118,7 @@ void ULKAccountManager::RequestLogout()
 	}
 
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL(FString::Printf(TEXT("%s/api/auth/logout"), *ServerURL));
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/logout"), *AuthServerURL));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
 
@@ -146,7 +153,7 @@ void ULKAccountManager::TryAutoLogin()
 	}
 
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL(FString::Printf(TEXT("%s/api/auth/verify"), *ServerURL));
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/verify"), *AuthServerURL));
 	Request->SetVerb(TEXT("GET"));
 	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
 
@@ -169,7 +176,7 @@ void ULKAccountManager::TryAutoLogin()
 void ULKAccountManager::RequestGoogleLoginWithAuthCode(const FString& AuthCode)
 {
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL(ServerURL + "/api/auth/google-login");
+	Request->SetURL(AuthServerURL + "/api/auth/google-login");
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
@@ -245,6 +252,24 @@ void ULKAccountManager::ClearLoginSession()
 {
 	LoginSession.Clear();
 	UGameplayStatics::DeleteGameInSlot(TEXT("LoginData"), 0);
+}
+
+void ULKAccountManager::ConnectToServer()
+{
+	if (IsLoggedIn() == false) return;
+
+#if WITH_EDITOR
+	if (GIsEditor)
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), TEXT("TestLevel"));
+	}
+#else 
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC)
+	{
+		PC->ClientTravel(GameServerURL, ETravelType::TRAVEL_Absolute);
+	}
+#endif
 }
 
 void ULKAccountManager::HandleLoginSuccess(const FString& Token, int32 AccountKey, const FGuid& UserKey)

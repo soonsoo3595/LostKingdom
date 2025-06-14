@@ -80,10 +80,7 @@ void ULKLoginUI::OnStartBtnClicked()
 {
 	if (ULKAccountManager* AccountManager = ULKAccountManager::GetInstance(GetWorld()))
 	{
-		if (AccountManager->IsLoggedIn())
-		{
-			UGameplayStatics::OpenLevel(GetWorld(), TEXT("CharacterLevel"));
-		}
+		AccountManager->ConnectToServer();
 	}
 }
 
