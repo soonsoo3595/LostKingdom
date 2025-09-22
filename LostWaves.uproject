@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{A55A76E0-4053-5E6E-BE1B-6287D06E1C6D}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "LostWaves",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}

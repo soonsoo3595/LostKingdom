@@ -1,0 +1,342 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Account/LWAccountManager.h"
+#include "Account/LWLoginSaveData.h"
+#include "Kismet/GameplayStatics.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Http.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonWriter.h"
+#include "Serialization/JsonSerializer.h"
+#include "Network/OAuthTcpListener.h"
+#include "LostWaves.h"
+
+bool ULWAccountManager::ShouldCreateSubsystem(UObject* Outer) const
+{
+	if(!Super::ShouldCreateSubsystem(Outer))
+	{
+		return false;
+	}
+
+	UWorld* World = Outer->GetWorld();
+	if (World == nullptr)
+	{
+		return false;
+	}
+
+	return World->GetNetMode() != NM_DedicatedServer;
+}
+
+void ULWAccountManager::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	GConfig->GetString(
+		TEXT("/Script/LostWaves.LWAccountManager"),
+		TEXT("AuthServerURL"),
+		AuthServerURL,
+		GGameIni
+	);
+
+	GConfig->GetString(
+		TEXT("/Script/LostWaves.LWAccountManager"),
+		TEXT("GameServerURL"),
+		GameServerURL,
+		GGameIni
+	);
+}
+
+void ULWAccountManager::RequestLogin(ELWProviderType LoginProviderType, const FString& InToken /*= TEXT("")*/)
+{
+	if (IsLoggedIn())
+	{
+		OnLoginRequestAck.Broadcast(false, TEXT("이미 로그인 되어 있습니다"));
+		return;
+	}
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/login"), *AuthServerURL));
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	// 요청 본문 생성
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("providerType"), static_cast<int32>(LoginProviderType));
+
+	FString Token = InToken;
+	if (Token.IsEmpty())
+	{
+		Token = GetToken(LoginProviderType);
+	}
+
+	Writer->WriteValue(TEXT("token"), Token);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+	Request->SetContentAsString(JsonString);
+
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+		{
+			if (!bSuccess || !Response.IsValid())
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 연결에 실패했습니다"));
+				return;
+			}
+
+			// JSON 응답 파싱
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (!FJsonSerializer::Deserialize(Reader, JsonObject))
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 응답을 파싱할 수 없습니다"));
+				return;
+			}
+
+			bool bLoginSuccess = JsonObject->GetBoolField(TEXT("success"));
+			if (!bLoginSuccess)
+			{
+				FString ErrorMessage = JsonObject->GetStringField(TEXT("message"));
+				OnLoginRequestAck.Broadcast(false, ErrorMessage);
+				return;
+			}
+
+			// 로그인 성공 시 데이터 처리
+			TSharedPtr<FJsonObject> Data = JsonObject->GetObjectField(TEXT("data"));
+			FString Token = Data->GetStringField(TEXT("token"));
+			int32 AccountKey = Data->GetIntegerField(TEXT("accountKey"));
+			FString UserKeyStr = Data->GetStringField(TEXT("userKey"));
+			FGuid UserKey;
+			FGuid::Parse(UserKeyStr, UserKey);
+
+			HandleLoginSuccess(Token, AccountKey, UserKey);
+			OnLoginRequestAck.Broadcast(true, TEXT("로그인 성공"));
+		});
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void ULWAccountManager::RequestLogout()
+{
+	if (IsLoggedIn() == false)
+	{
+		OnLoginRequestAck.Broadcast(false, TEXT("현재 로그인 상태가 아닙니다."));
+		return;
+	}
+
+	if (LoginSession.IsValid() == false)
+	{
+		OnLoginRequestAck.Broadcast(false, TEXT("로그인 세션이 유효하지 않습니다."));
+		return;
+	}
+
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/logout"), *AuthServerURL));
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
+
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+		{
+			if (!bSuccess || !Response.IsValid())
+			{
+				OnLoginRequestAck.Broadcast(true, TEXT("서버 연결에 실패했습니다"));
+				return;
+			}
+
+			if (Response->GetResponseCode() == 200)
+			{
+				ClearLoginSession();
+				OnLoginRequestAck.Broadcast(false, TEXT("로그아웃 성공"));
+			}
+			else
+			{
+				OnLoginRequestAck.Broadcast(true, TEXT("로그아웃 실패"));
+			}
+		});
+
+	Request->ProcessRequest();
+}
+
+void ULWAccountManager::TryAutoLogin()
+{
+	if (LoadLoginSession() == false)
+	{
+		OnLoginRequestAck.Broadcast(false, TEXT(""));
+		return;
+	}
+
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(FString::Printf(TEXT("%s/api/auth/verify"), *AuthServerURL));
+	Request->SetVerb(TEXT("GET"));
+	Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *LoginSession.AuthToken));
+
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	{
+		if (bSuccess && Response.IsValid())
+		{
+			if (Response->GetResponseCode() == 200)
+			{
+				OnLoginRequestAck.Broadcast(true, TEXT("자동 로그인 성공"));
+			}
+			else if (Response->GetResponseCode() == 409)
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("다른 기기에서 이미 접속중입니다"));
+			}
+			else
+			{
+				ClearLoginSession();
+				OnLoginRequestAck.Broadcast(false, TEXT("자동 로그인 실패"));
+			}
+		}
+	});
+
+	Request->ProcessRequest();
+}
+
+void ULWAccountManager::RequestGoogleLoginWithAuthCode(const FString& AuthCode)
+{
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(AuthServerURL + "/api/auth/google-login");
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("code"), AuthCode);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	Request->SetContentAsString(JsonString);
+
+	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+		{
+			if (!bSuccess || !Response.IsValid())
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("서버 연결 실패"));
+				return;
+			}
+
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (!FJsonSerializer::Deserialize(Reader, JsonObject))
+			{
+				OnLoginRequestAck.Broadcast(false, TEXT("응답 파싱 실패"));
+				return;
+			}
+
+			if (!JsonObject->GetBoolField("success"))
+			{
+				OnLoginRequestAck.Broadcast(false, JsonObject->GetStringField("message"));
+				return;
+			}
+
+			const TSharedPtr<FJsonObject> Data = JsonObject->GetObjectField("data");
+			const FString Token = Data->GetStringField("token");
+			const int32 AccountKey = Data->GetIntegerField("accountKey");
+			const FString UserKeyStr = Data->GetStringField("userKey");
+
+			FGuid UserKey;
+			FGuid::Parse(UserKeyStr, UserKey);
+
+			const double EndTime = FPlatformTime::Seconds();
+			HandleLoginSuccess(Token, AccountKey, UserKey);
+			OnLoginRequestAck.Broadcast(true, TEXT("로그인 성공"));
+		});
+
+	Request->ProcessRequest();
+}
+
+void ULWAccountManager::SaveLoginSession()
+{
+	ULWLoginSaveData* SaveData = NewObject<ULWLoginSaveData>();
+	SaveData->SavedSession = LoginSession;
+	UGameplayStatics::SaveGameToSlot(SaveData, TEXT("LoginData"), 0);
+}
+
+bool ULWAccountManager::LoadLoginSession()
+{
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("LoginData"), 0))
+	{
+		ULWLoginSaveData* Loaded = Cast<ULWLoginSaveData>(UGameplayStatics::LoadGameFromSlot(TEXT("LoginData"), 0));
+		if (Loaded)
+		{
+			LoginSession = Loaded->SavedSession;
+			return LoginSession.IsValid();
+		}
+	}
+	return false;
+}
+
+void ULWAccountManager::ClearLoginSession()
+{
+	LoginSession.Clear();
+	UGameplayStatics::DeleteGameInSlot(TEXT("LoginData"), 0);
+}
+
+void ULWAccountManager::ConnectToServer()
+{
+	if (IsLoggedIn() == false) return;
+
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC)
+	{
+		PC->ClientTravel(GameServerURL, ETravelType::TRAVEL_Absolute);
+	}
+}
+
+void ULWAccountManager::HandleLoginSuccess(const FString& Token, int32 AccountKey, const FGuid& UserKey)
+{
+	LoginSession.AuthToken = Token;
+	LoginSession.AccountKey = AccountKey;
+	LoginSession.UserKey = UserKey;
+
+	SaveLoginSession();
+}
+
+FString ULWAccountManager::GetToken(ELWProviderType LoginProviderType)
+{
+	if (LoginProviderType == ELWProviderType::Guest)
+	{
+		return FGuid::NewGuid().ToString();
+	}
+
+	return TEXT("");
+}
+
+void ULWAccountManager::StartOAuthListener()
+{
+	if (OAuthListener == nullptr)
+	{
+		OAuthListener = NewObject<UOAuthTcpListener>();
+		if (OAuthListener->Start(5005, GetWorld()))
+		{
+			UE_LOG(LogLostWaves, Log, TEXT("[OAuth] Listener started"));
+		}
+		else
+		{
+			UE_LOG(LogLostWaves, Error, TEXT("[OAuth] Failed to start listener"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogLostWaves, Warning, TEXT("[OAuth] Listener already started"));
+	}
+}
+
+void ULWAccountManager::StopOAuthListener()
+{
+	if (OAuthListener)
+	{
+		OAuthListener->Stop();
+		OAuthListener = nullptr;
+	}
+	else
+	{
+		UE_LOG(LogLostWaves, Warning, TEXT("[OAuth] Listener not started"));
+	}
+}
